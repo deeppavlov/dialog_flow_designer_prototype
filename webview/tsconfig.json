@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"module": "es6",
+		"target": "es2019",
+		"outDir": "webview",
+		"sourceMap": true,
+		"strict": true,
+		"rootDir": "."
+	},
+	"exclude": ["node_modules", ".vscode-test"]
+}

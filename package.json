@@ -1,0 +1,52 @@
+{
+	"name": "DD-IDDE",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"vscode:prepublish": "npm run build -- --minify",
+    "start": "npm run code && npm run watch",
+    "code": "code --extensionDevelopmentPath=${pwd} .",
+		"build": "npm run build-ext -- --minify && npm run build-webv -- --minify",
+		"watch": "concurrently \"tsc -w --noEmit -p ./\" \"tsc -w --noEmit -p ./webview\" \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" --names \"tsc-main,tsc-webview,esbuild-main,esbuild-webview\"",
+		"build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
+    "build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
+		"lint": "eslint . --ext .ts,.tsx"
+	},
+	"engines": {
+		"vscode": "^1.47.0"
+	},
+	"main": "./dist/main.js",
+	"activationEvents": [
+		"onCustomEditor:deeppavlov.dd-idde-graph"
+	],
+	"contributes": {
+		"customEditors": [
+      {
+        "viewType": "deeppavlov.dd-idde-graph",
+        "displayName": "DD-IDDE Dialog Designer",
+        "selector": [
+          {
+            "filenamePattern": "*.py"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
+	},
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"devDependencies": {
+		"@types/node": "^12.12.0",
+		"@types/vscode": "^1.47.0",
+		"@types/vscode-webview": "^1.57.0",
+		"@typescript-eslint/eslint-plugin": "^4.16.0",
+		"@typescript-eslint/parser": "^4.16.0",
+		"concurrently": "^6.4.0",
+		"esbuild": "^0.13.13",
+		"eslint": "^7.21.0",
+		"typescript": "^4.4.3"
+	}
+}
