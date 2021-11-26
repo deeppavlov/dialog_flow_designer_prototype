@@ -1,7 +1,8 @@
-const vscode = acquireVsCodeApi();
+import React from 'react'
+import { render } from 'react-dom'
+import GraphEditor from './GraphEditor'
 
-window.addEventListener("message", (event) => {
-  const message = event.data;
-  switch (message.command) {
-  }
-});
+// const vscode = acquireVsCodeApi();
+
+const root = document.getElementById('root') as HTMLDivElement;
+render(React.createElement(GraphEditor), root)

@@ -1,15 +1,8 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import { TextDocument, WebviewPanel, CancellationToken } from "vscode";
-
-function getNonce() {
-  let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
-}
+import { PythonShell } from "python-shell";
+import { Graph } from "./types";
 
 class GraphEditorProvider implements vscode.CustomTextEditorProvider {
   public static viewType = "deeppavlov.dd-idde-graph";
@@ -35,12 +28,14 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     };
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
-    function updateWebview() {
+    const updateWebview = async () => {
+      const graph = await this.py2Graph(document.getText());
+      console.log('sending', graph)
       webviewPanel.webview.postMessage({
-        type: "update",
-        text: document.getText(),
+        type: "setGraph",
+        payload: { graph },
       });
-    }
+    };
 
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
       (e) => {
@@ -76,13 +71,11 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
       vscode.Uri.joinPath(this.context.extensionUri, "webview", "editor.css")
     );
 
-    const nonce = getNonce();
     return /* html */ `
 			<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 				<link href="${styleResetUri}" rel="stylesheet" />
@@ -92,15 +85,39 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Graph Editor</title>
 			</head>
 			<body>
-				<div class="notes">
-					<div class="add-button">
-						<button>Scratch!</button>
-					</div>
-				</div>
-				
-				<script nonce="${nonce}" src="${scriptUri}"></script>
+				<div id="root"></div>
+				<script src="${scriptUri}"></script>
 			</body>
 			</html>`;
+  }
+
+  private async py2Graph(pythonCode: string): Promise<Graph> {
+    const b64Py = Buffer.from(pythonCode, "utf-8").toString("base64");
+    const result = (await this.runPythonScript("py2json", {
+      pycode: b64Py,
+    })) as { graph: Graph };
+    console.log('got graph from python', result)
+    return result.graph;
+  }
+
+  private runPythonScript(script: string, input: object): Promise<object> {
+    return new Promise((resolve) => {
+      const pathToScript = vscode.Uri.file(
+        path.join(this.context.extensionPath, `python/${script}.py`)
+      ).fsPath;
+      console.log('running', pathToScript)
+      const shell = new PythonShell(pathToScript, { mode: "json" });
+      shell.on("end", (err) => {
+        console.log('script exited')
+        if (err) throw err;
+      });
+      shell.send(input);
+      console.log('sending', input)
+
+      shell.on("message", resolve);
+      console.error(shell.stderr.read())
+      console.error(shell.stdout.read())
+    });
   }
 }
 

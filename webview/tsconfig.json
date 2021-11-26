@@ -1,11 +1,13 @@
 {
 	"compilerOptions": {
 		"module": "es6",
+    "jsx": "react",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
 		"target": "es2019",
 		"outDir": "webview",
 		"sourceMap": true,
-		"strict": true,
-		"rootDir": "."
+		"strict": true
 	},
 	"exclude": ["node_modules", ".vscode-test"]
 }
