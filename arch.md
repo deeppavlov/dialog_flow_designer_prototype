@@ -6,7 +6,7 @@ The extension is divided into 3 main components:
  - Python Server
  - Webview
 
-![arch-overview.png](Architecture overview)
+![Architecture overview](arch-overview.png)
 
 ## Python Server
 
