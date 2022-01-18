@@ -3,7 +3,7 @@ import dataclasses
 import libcst as cst
 import libcst.matchers as m
 
-from typing import Literal, Optional, Tuple, Union, List, Dict, DefaultDict, cast
+from typing import Literal, Optional, Tuple, Union, List, Dict, DefaultDict, Set, cast
 from dataclasses import dataclass, field
 from collections import defaultdict
 
@@ -20,6 +20,13 @@ class KeyUpdate:
 
     def __str__(self):
         return self.old_key
+
+    def __eq__(self, b):
+        if isinstance(b, KeyUpdate):
+            return self.old_key == b.old_key
+        elif isinstance(b, str):
+            return self.old_key == b
+        return False
 
 
 @dataclass
@@ -48,22 +55,35 @@ class DictUpdate:
 
         return cast(DictUpdate, convert(dicitonary))
 
-    def get(self, key: str):
-        target_expr = cst.parse_expression(key)
+    def get(self, key: Union[str, cst.BaseExpression]):
+        target_expr = cst.parse_expression(key) if isinstance(key, str) else key
         key = getattr(target_expr, "raw_value", key)
+        sys.stderr.write(f"Looking for key {key} in {self.elements}\n\n")
         for k, v in self.elements.items():
+            if k == key: return k, v
             expr = cst.parse_expression(str(k)) if k != "" else ""
             if getattr(expr, "value", None) == key:
                 return k, v
             if getattr(expr, "raw_value", None) == key:
                 return k, v
+            elif isinstance(expr, cst.BaseExpression) and expr.deep_equals(target_expr):
+                return k, v
+            elif isinstance(k, KeyUpdate):
+                expr = cst.parse_expression(str(k.new_key)) if k.new_key != "" else ""
+                if getattr(expr, "value", None) == key:
+                    return k.new_key, v
+                if getattr(expr, "raw_value", None) == key:
+                    return k.new_key, v
+                elif isinstance(expr, cst.BaseExpression) and expr.deep_equals(target_expr):
+                    return k.new_key, v
+                
         return None, None
 
-    def pop(self, key: Union[str, cst.BaseExpression]) -> Union[Tuple[None, None], Tuple[str, Optional[BaseUpdate]]]:
+    def pop(self, key: Union[str, cst.BaseExpression], _) -> Union[Tuple[None, None], Tuple[str, Optional[BaseUpdate]]]:
         if isinstance(key, (cst.Name, cst.SimpleString)):
             str_key = key.value
         elif isinstance(key, cst.Tuple):
-            str_key = f"({key.elements[0].value}, {key.elements[1].value})"
+            str_key = key
         elif isinstance(key, cst.Call):
             return None, None
         elif isinstance(key, str):
@@ -72,12 +92,20 @@ class DictUpdate:
             raise TypeError(f"Unsupported type {type(key)}")
         found_key, _ = self.get(str_key)
         if found_key is None:
+            sys.stderr.write(f"{key}: found_key is none\n")
             return None, None
         if isinstance(found_key, KeyUpdate):
             new_key = found_key.new_key
+            sys.stderr.write(f"found_key KeyUpdate {found_key}, new {new_key}\n")
+            return new_key, self.elements.pop(found_key, None)
         else:
+            sys.stderr.write(f"found_key str {found_key}\n")
             new_key = found_key
-        return new_key, self.elements.pop(found_key, None)
+            if found_key not in self.elements:
+                for k in self.elements.keys():
+                    if isinstance(k, KeyUpdate) and k.new_key == found_key:
+                        return new_key, self.elements.pop(k, None)
+            return new_key, self.elements.pop(found_key, None)
 
     def __iter__(self):
         for k in list(self.elements.keys()):
@@ -90,9 +118,13 @@ class ListUpdate:
     allow_extra: bool = True
     order_significant: bool = True
 
-    def pop(self, item: Union[BaseUpdate, cst.BaseExpression]):
-        idx = next((i for i, el in enumerate(self.elements) if el == item), None)
-        return None, None if idx is None else self.elements.pop(idx)
+    def pop(self, item: Union[BaseUpdate, cst.BaseExpression], idx = None):
+        if not self.order_significant:
+            idx = next((i for i, el in enumerate(self.elements) if el == item), None)
+        if idx is not None and idx < len(self.elements):
+            return None, self.elements.pop(idx)
+        else:
+            return None, None
 
     def __iter__(self):
         for i in range(len(self.elements)):
@@ -402,9 +434,9 @@ class NodeVisitor(m.MatcherDecoratableTransformer):
             )
 
         new_elements = []
-        for el in node.elements:
+        for i, el in enumerate(node.elements):
             key = el.key if isinstance(el, cst.DictElement) else el.value
-            new_key_str, update = target.pop(key)
+            new_key_str, update = target.pop(key, i)
             if new_key_str and isinstance(el, cst.DictElement):
                 if isinstance(el.key, cst.SimpleString):
                     if not new_key_str.startswith(('"', "'", "f'", 'f"')):
@@ -416,17 +448,28 @@ class NodeVisitor(m.MatcherDecoratableTransformer):
                 elif isinstance(el.key, cst.Name):
                     new_key = el.key.with_changes(value=new_key_str)
                     el = el.with_changes(key=new_key)
-            if isinstance(update, ValueUpdate):
-                if update != el.value:
-                    # Update element
-                    new_el = el.with_changes(value=update.parsed)
-                    new_elements.append(new_el)
                 else:
-                    # Unchanged
-                    new_elements.append(el)
+                    el = el.with_changes(
+                        key=cst.parse_expression(new_key_str)
+                    )
+            if isinstance(update, ValueUpdate):
+                if not update.remove:
+                    if update != el.value:
+                        # Update element
+                        new_el = el.with_changes(value=update.parsed)
+                        new_elements.append(new_el)
+                    else:
+                        # Unchanged
+                        new_elements.append(el)
             elif isinstance(update, (DictUpdate, ListUpdate)):
                 new_elements.append(el)
             elif update is None and target.allow_extra:
+                # if self.path[-1] == "TRANSITIONS":
+                #     flow_name = str(self.path[0])
+                #     node_name = self.path[1]
+                #     if node_name in self.node_names.get(flow_name, set()):
+                #         new_elements.append(el)
+                # else:
                 # Not in update, but extra is allowed
                 new_elements.append(el)
 
@@ -472,14 +515,20 @@ class NodeVisitor(m.MatcherDecoratableTransformer):
         else:
             ws_dict["rbracket"] = cst.RightSquareBracket(right_ws)
         node = node.with_changes(elements=new_elements, **ws_dict)
-        if not is_expanded:
-            line_len = max(
-                (len(l) for l in self.module.code_for_node(node).splitlines())
+        if len(node.elements) == 0:
+            if isinstance(node, cst.Dict):
+                node = cst.parse_expression('{}')
+            else:
+                node = cst.parse_expression('[]')
+        else:
+            if not is_expanded:
+                line_len = max(
+                    (len(l) for l in self.module.code_for_node(node).splitlines())
+                )
+                is_expanded = line_len > 80
+            node = self.format_collection(
+                node, base_indent, is_expanded, is_expanded and has_trailing_comma
             )
-            is_expanded = line_len > 80
-        node = self.format_collection(
-            node, base_indent, is_expanded, is_expanded and has_trailing_comma
-        )
 
         sys.stderr.write(f"code for updated node: {self.module.code_for_node(node)}\n")
         return node

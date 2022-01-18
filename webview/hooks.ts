@@ -1,34 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dagre from "dagre";
 import { Elements, Position, isNode } from "react-flow-renderer";
-import type { Action, Graph } from "../src/types";
+import type { ViewState, ViewAction, Graph } from "../src/types";
 
-type ActionHandlers = {
-  [key in `on${Capitalize<Action["type"]>}`]?: (
-    payload: Action["payload"]
-  ) => void;
+const vscode = acquireVsCodeApi();
+
+export const sendAction = (a: ViewAction) => {
+  vscode.postMessage(a);
 };
 
-type UseGraphElementsReturn = {
-  elements: Elements;
-  handlers: Partial<ActionHandlers>;
-};
-
-export function useMessage(handlers: ActionHandlers) {
+export function useViewState(): ViewState | null {
+  const [state, setState] = useState<ViewState | null>(null);
   useEffect(() => {
-    window.addEventListener("message", (event) => {
-      const message: Action = event.data;
-      console.log('message', message)
-      const handlerName = `on${message.type
-        .charAt(0)
-        .toUpperCase()}${message.type.slice(1)}` as keyof ActionHandlers;
-      handlers?.[handlerName]?.(message.payload);
-    });
-  }, []);
-}
+    const handler = (event: MessageEvent<ViewState>) => {
+      setState(event.data);
+    };
+    window.addEventListener("message", handler);
+    sendAction({ type: "load" });
 
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
+    return () => {
+      window.removeEventListener("message", handler);
+    };
+  }, []);
+
+  return state;
+}
 
 const nodeWidth = 172;
 const nodeHeight = 36;
@@ -38,6 +34,8 @@ const getElements = (graph: Graph): Elements => {
     ...graph.nodes.map((node, idx) => ({
       id: `${idx}`,
       data: node.data,
+      type: node.type || "default",
+      // position: { ...node.position }
       position: { x: 0, y: 0 },
     })),
     ...graph.edges.map((edge) => ({
@@ -47,8 +45,14 @@ const getElements = (graph: Graph): Elements => {
     })),
   ];
 
-  console.log('new graph')
-  console.log(elements)
+  console.log("new graph");
+  console.log(elements);
+  // elements.forEach((el) => {
+  //   if (!el.id.startsWith('e') && !el.position) console.warn("POS", el)
+  //   })
+
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
 
   dagreGraph.setGraph({ rankdir: "LR" });
 
@@ -81,12 +85,10 @@ const getElements = (graph: Graph): Elements => {
   });
 };
 
-export function useGraphElements(): UseGraphElementsReturn {
-  const [elements, setElements] = useState<Elements>([]);
-  return {
-    elements,
-    handlers: {
-      onSetGraph: ({ graph }) => setElements(getElements(graph)),
-    },
-  };
+export function useGraphElements(state: ViewState | null): Elements {
+  const elements = useMemo(
+    () => (state ? getElements(state.graph) : []),
+    [state?.graph]
+  );
+  return elements;
 }

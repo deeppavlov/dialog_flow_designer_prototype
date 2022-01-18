@@ -7,10 +7,10 @@
 		"start": "npm run code && npm run watch",
 		"code": "code --extensionDevelopmentPath=${pwd} ./test/test-flows/",
 		"build": "npm run build-ext -- --minify && npm run build-webv -- --minify",
-		"watch": "concurrently \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" --names \"tsc-main,tsc-webview,esbuild-main,esbuild-webview\"",
+		"watch": "concurrently \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" --names \"esbuild-main,esbuild-webview\"",
 		"build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
 		"build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
-    "tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
+		"tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
 		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"engines": {
@@ -60,6 +60,7 @@
 		"python-shell": "^3.0.1",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
-		"react-flow-renderer": "^9.6.11"
+		"react-flow-renderer": "^9.6.11",
+		"react-icons": "^4.3.1"
 	}
 }

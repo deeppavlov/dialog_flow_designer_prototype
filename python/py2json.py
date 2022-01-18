@@ -8,9 +8,9 @@ import json
 import base64
 import libcst as cst
 
-from grandalf.graphs import graph_core, Edge, Vertex, Graph
-from grandalf.layouts import SugiyamaLayout,DigcoLayout,VertexViewer,Layer,DummyVertex
-from grandalf.routing import EdgeViewer, route_with_rounded_corners
+# from grandalf.graphs import graph_core, Edge, Vertex, Graph
+# from grandalf.layouts import SugiyamaLayout,DigcoLayout,VertexViewer,Layer,DummyVertex
+# from grandalf.routing import EdgeViewer, route_with_rounded_corners
 
 class Node:
     """
@@ -203,12 +203,12 @@ def graph2json(graph):
     """
     nodes = []
     node_ids = {}
-    for _, flow_data in graph.items():
+    for flow_name, flow_data in graph.items():
         for node, data in flow_data.items():
             # sys.stderr.write(f"{node[1]}: {data['id']}\n")
             nodes.append({
-                'type': 'node',
-                'data': {'label': node[1]}
+                'type': 'response',
+                'data': {'label': node[1], 'flow': flow_name }
             })
             node_ids[data['id']] = len(nodes) - 1
 
@@ -253,7 +253,6 @@ def graph2json(graph):
                     'target': conn_node_id
                 })
                 nodes.append({
-                    'type': 'node',
                     'data': {'label': title}
                 })
                 edges.append({
@@ -265,20 +264,24 @@ def graph2json(graph):
         'edges': edges
     }
 
-def layout(graph_dict):
-    vertices = [ Vertex(n['data']['label']) for n in graph_dict['nodes'] ]
-    for vert in vertices: vert.view = VertexViewer(172, 36)
-    edges = [ Edge(vertices[e['source']], vertices[e['target']]) for e in graph_dict['edges'] ]
-    graph = Graph(vertices, edges)
-    sug = SugiyamaLayout(graph.C[0])
-    sug.init_all()
-    sug.draw()
-    for i, v in enumerate(graph.C[0].sV):
-        graph_dict['nodes'][i]['position'] = {
-            'x': v.view.xy[0],
-            'y': v.view.xy[1],
-        }
-    return graph_dict
+# def layout(graph_dict):
+#     vertices = [ Vertex(n['data']['label']) for n in graph_dict['nodes'] ]
+#     vertices.append(Vertex(vertices[-1].data))
+#     class defaultview(object):
+#         w,h = 172,36
+#     for vert in vertices: vert.view = defaultview()
+#     edges = [ Edge(vertices[e['source']], vertices[e['target']]) for e in graph_dict['edges'] ]
+#     edges.append(Edge(edges[-1].v[0], vertices[-1]))
+#     graph = Graph(vertices, edges)
+#     sug = SugiyamaLayout(graph.C[0])
+#     sug.init_all()
+#     sug.draw()
+#     for i, v in enumerate(graph.C[0].sV):
+#         graph_dict['nodes'][i]['position'] = {
+#             'x': v.view.xy[0],
+#             'y': v.view.xy[1],
+#         }
+#     return graph_dict
 
 
 def py2json(content):
@@ -286,7 +289,7 @@ def py2json(content):
     flow = Flows(content, tree)
     nodes = flow2graph(flow)
     graph = graph2json(nodes)
-    graph = layout(graph)
+    # graph = layout(graph)
     return graph
 
 

@@ -2,7 +2,28 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { TextDocument, WebviewPanel, CancellationToken } from "vscode";
 import { PythonShell } from "python-shell";
-import { Graph } from "./types";
+import { Graph, ViewAction, ViewState } from "./types";
+
+function getPos(text: string, substring: string): {line: number, col: number} {
+  var line = 1,
+    col = 1,
+    matchedChars = 0;
+
+  for (var i = 0; i < text.length; i++) {
+    text[i] === substring[matchedChars] ? matchedChars++ : (matchedChars = 0);
+
+    if (matchedChars === substring.length) {
+      return {line,col};
+    }
+    if (text[i] === "\n") {
+      line++;
+      col = 1;
+    } else if (matchedChars === 0) {
+      col++;
+    }
+  }
+  throw "Not found"
+}
 
 class GraphEditorProvider implements vscode.CustomTextEditorProvider {
   public static viewType = "deeppavlov.dd-idde-graph";
@@ -30,11 +51,11 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
 
     const updateWebview = async () => {
       const graph = await this.py2Graph(document.getText());
-      console.log('sending', graph)
-      webviewPanel.webview.postMessage({
-        type: "setGraph",
-        payload: { graph },
-      });
+      const newState: ViewState = {
+        graph,
+      };
+      console.log("sending to webview", newState);
+      webviewPanel.webview.postMessage(newState);
     };
 
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
@@ -49,12 +70,49 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
       changeDocumentSubscription.dispose();
     });
 
-    webviewPanel.webview.onDidReceiveMessage((e) => {
+    webviewPanel.webview.onDidReceiveMessage(async (e: ViewAction) => {
+      console.log("msg from webview", e);
       switch (e.type) {
+        case "load":
+          updateWebview();
+          break;
+        case "add":
+          const newPy = await this.addNode(
+            document.getText(),
+            e.payload.parentId,
+            e.payload.parentFlow
+          );
+          const workspaceEdit = new vscode.WorkspaceEdit();
+          workspaceEdit.replace(
+            document.uri,
+            new vscode.Range(0, 0, document.lineCount, 0),
+            newPy
+          );
+          await vscode.workspace.applyEdit(workspaceEdit);
+          updateWebview();
+
+          for (let editor of vscode.window.visibleTextEditors) {
+            if (editor.document.uri === document.uri) {
+              vscode.window.showTextDocument(document, {
+                preview: false,
+                viewColumn: editor.viewColumn,
+              });
+              setTimeout(() => {
+                const pos = getPos(newPy, '<Rename new node>')
+                editor.selection = new vscode.Selection(
+                  pos.line - 1,
+                  pos.col - 1,
+                  pos.line - 1,
+                  pos.col + 16
+                );
+                vscode.commands.executeCommand("editor.action.selectHighlights")
+              }, 10);
+            }
+          }
+
+          break;
       }
     });
-
-    updateWebview();
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
@@ -96,8 +154,25 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     const result = (await this.runPythonScript("py2json", {
       pycode: b64Py,
     })) as { graph: Graph };
-    console.log('got graph from python', result)
+    console.log("got graph from python", result);
     return result.graph;
+  }
+
+  private async addNode(
+    pythonCode: string,
+    parentId: number,
+    parentFlow: string
+  ): Promise<string> {
+    const b64Py = Buffer.from(pythonCode, "utf-8").toString("base64");
+    const result = (await this.runPythonScript("addsuggs", {
+      pyData: b64Py,
+      title: "'<Rename new node>'",
+      flow: parentFlow,
+      cnd: "lambda ctx, actor, *args, **kwargs: True",
+      parent: parentId,
+    })) as { pycode: string };
+    const code = Buffer.from(result.pycode, "base64").toString("utf-8");
+    return code;
   }
 
   private runPythonScript(script: string, input: object): Promise<object> {
@@ -105,18 +180,20 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
       const pathToScript = vscode.Uri.file(
         path.join(this.context.extensionPath, `python/${script}.py`)
       ).fsPath;
-      console.log('running', pathToScript)
-      const shell = new PythonShell(pathToScript, { mode: "json" });
-      shell.on("end", (err) => {
-        console.log('script exited')
-        if (err) throw err;
-      });
-      shell.send(input);
-      console.log('sending', input)
+      console.log("running", pathToScript);
+      const shell = new PythonShell(pathToScript, { mode: "text" });
+      shell.send(JSON.stringify(input) + "\n");
+      console.log("sending to py", input);
 
-      shell.on("message", resolve);
-      console.error(shell.stderr.read())
-      console.error(shell.stdout.read())
+      shell.on("message", (msg) => resolve(JSON.parse(msg)));
+      shell.end((err) => {
+        console.log("script exited");
+        if (err) {
+          console.error(shell.stderr.read());
+          console.error(shell.stdout.read());
+          throw err;
+        }
+      });
     });
   }
 }

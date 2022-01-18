@@ -1,11 +1,14 @@
 export interface Graph {
   nodes: {
     type: string;
-    data: object;
+    data: {
+      label: string;
+      flow: string;
+    };
     position: {
       x: number;
       y: number;
-    }
+    };
   }[];
   edges: {
     source: number;
@@ -13,11 +16,26 @@ export interface Graph {
   }[];
 }
 
-interface SetGraph {
-  type: "setGraph";
+/*
+ * The state passed to the webview in each message
+ */
+export interface ViewState {
+  graph: Graph;
+}
+
+interface LoadAction {
+  type: "load";
+}
+
+interface AddAction {
+  type: "add";
   payload: {
-    graph: Graph;
+    parentId: number;
+    parentFlow: string;
   };
 }
 
-export type Action = SetGraph;
+/*
+ * The action type passed from view to the extension
+ */
+export type ViewAction = LoadAction | AddAction;
