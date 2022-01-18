@@ -1,4 +1,4 @@
-# Architecture
+## Architecture
 
 The extension is divided into 3 main components:
 
@@ -8,7 +8,7 @@ The extension is divided into 3 main components:
 
 ![Architecture overview](arch-overview.png)
 
-## Python Server
+### Python Server
 
 Responsible for translating between the graph (JSON format) and DFF python code. To speed up the conversion, the python process will keep running in the background. It will receieve commands and respond via pipe, in JSON format.
 
@@ -26,7 +26,7 @@ Responsible for translating between the graph (JSON format) and DFF python code.
  - Scan with regex for the DSL instead of parsing the whole file
  - Add caching to python parsing 
 
-## Extension Process
+### Extension Process
 
 Message broker. Routes messages between the other components. If multiple editors are open, each has an instance of the broker, to avoid conflicts.
 
@@ -46,7 +46,7 @@ Universal message format (JSON):
  - Message router
  - Message handlers for each target
 
-## Webview
+### Webview
 
 A React application, responsible for rendering the graph and allowing the user to edit it.
 
@@ -59,7 +59,7 @@ Frontend stack:
  - Storybook *(isolated component development, BDD and snapshot testing)*
  - Cypress *(integration testing outside VSCode, in a mocked environment)*
 
-**What needs is done**
+**What is done**
 
  - Graph rendering
  - Graph layout
@@ -75,13 +75,13 @@ Frontend stack:
 	- Allow connecting to existing nodes
  - Renaming, deleting nodes
 
-# Plan 1 - Assuming no tight deadline (aka. doing things properly)
+## Plan 1 - Assuming no tight deadline (aka. doing things properly)
 
-## Phase I (2 weeks)
+### Phase I (2 weeks)
 
 Finishing the python server. This gets priority, because any improvements/fixes made here can be released with the drawio-based version as well.
 
-## Phase II (~4 weeks)
+### Phase II (~4 weeks)
 
 Extension process and the webview. By the end of this phase, the extension should be usable.
 
@@ -94,13 +94,13 @@ Extension process and the webview. By the end of this phase, the extension shoul
  3. Integrating with recommendations - *3-4 days*
  4. Node renaming and deleting - *2-3 days*
 
-## Phase III (indefinite)
+### Phase III (indefinite)
 
 Integration of statistics, new annotators, auto response generators and any other new features.
 
 Adding cypress integration testing.
 
-# Plan 2 - Assuming deadline at the end of Feb. (aka. doing things as usual)
+## Plan 2 - Assuming deadline at the end of Feb. (aka. doing things as usual)
 
 Changes to the python part, tests and storybook are deferred until after the deadline.
 
