@@ -3,3 +3,4 @@ dist
 *.map
 webview/*.js
 venv
+__pycache__
