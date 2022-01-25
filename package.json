@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"vscode:prepublish": "npm run tsc && npm run build -- --minify",
+		"vscode:prepublish": "npm run lint && npm run tsc && npm run build -- --minify",
 		"start": "npm run code && npm run watch",
 		"code": "code --extensionDevelopmentPath=${pwd} ./test/test-flows/",
 		"build": "npm run build-ext -- --minify && npm run build-webv -- --minify",
@@ -11,7 +11,9 @@
 		"build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
 		"build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
 		"tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
-		"lint": "eslint . --ext .ts,.tsx"
+		"lint": "eslint . --ext .ts,.tsx",
+		"format": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\"",
+		"prepare": "husky install"
 	},
 	"engines": {
 		"vscode": "^1.47.0"
@@ -46,14 +48,19 @@
 		"@types/react-dom": "^17.0.11",
 		"@types/vscode": "^1.47.0",
 		"@types/vscode-webview": "^1.57.0",
-		"@typescript-eslint/eslint-plugin": "^4.16.0",
-		"@typescript-eslint/parser": "^4.16.0",
+		"@typescript-eslint/eslint-plugin": "^4.33.0",
+		"@typescript-eslint/parser": "^4.33.0",
 		"concurrently": "^6.4.0",
 		"esbuild": "^0.13.13",
-		"eslint": "^7.21.0",
-		"typescript": "^4.4.3"
+		"eslint": "^7.32.0",
+		"husky": "^7.0.4",
+		"lint-staged": "^12.3.1",
+		"prettier-eslint": "^13.0.0",
+		"prettier-eslint-cli": "^5.0.1",
+		"typescript": "^4.4.4"
 	},
 	"dependencies": {
+		"csstype": "^2.6.2",
 		"dagre": "^0.8.5",
 		"goober": "^2.0.43",
 		"nanoid": "^3.1.30",
@@ -62,5 +69,8 @@
 		"react-dom": "^17.0.2",
 		"react-flow-renderer": "^9.6.11",
 		"react-icons": "^4.3.1"
+	},
+	"lint-staged": {
+		"*.{ts,tsx}": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\""
 	}
 }
