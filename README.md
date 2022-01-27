@@ -1,4 +1,4 @@
-# DD-IDDE
+# Dialog Flow Designer
 
 This branch contains the work on the brand-new experimental UI for the extension. Currently, it is not in a usable state yet.
 
