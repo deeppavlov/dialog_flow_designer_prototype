@@ -4,16 +4,16 @@ import { TextDocument, WebviewPanel, CancellationToken } from "vscode";
 import { PythonShell } from "python-shell";
 import { Graph, ViewAction, ViewState } from "./types";
 
-function getPos(text: string, substring: string): {line: number, col: number} {
-  var line = 1,
+function getPos(text: string, substring: string): { line: number; col: number } {
+  let line = 1,
     col = 1,
     matchedChars = 0;
 
-  for (var i = 0; i < text.length; i++) {
+  for (let i = 0; i < text.length; i++) {
     text[i] === substring[matchedChars] ? matchedChars++ : (matchedChars = 0);
 
     if (matchedChars === substring.length) {
-      return {line,col};
+      return { line, col };
     }
     if (text[i] === "\n") {
       line++;
@@ -22,7 +22,7 @@ function getPos(text: string, substring: string): {line: number, col: number} {
       col++;
     }
   }
-  throw "Not found"
+  throw "Not found";
 }
 
 class GraphEditorProvider implements vscode.CustomTextEditorProvider {
@@ -58,13 +58,11 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
       webviewPanel.webview.postMessage(newState);
     };
 
-    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(
-      (e) => {
-        if (e.document.uri.toString() === document.uri.toString()) {
-          updateWebview();
-        }
+    const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
+      if (e.document.uri.toString() === document.uri.toString()) {
+        updateWebview();
       }
-    );
+    });
 
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
@@ -83,29 +81,25 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
             e.payload.parentFlow
           );
           const workspaceEdit = new vscode.WorkspaceEdit();
-          workspaceEdit.replace(
-            document.uri,
-            new vscode.Range(0, 0, document.lineCount, 0),
-            newPy
-          );
+          workspaceEdit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), newPy);
           await vscode.workspace.applyEdit(workspaceEdit);
           updateWebview();
 
-          for (let editor of vscode.window.visibleTextEditors) {
+          for (const editor of vscode.window.visibleTextEditors) {
             if (editor.document.uri === document.uri) {
               vscode.window.showTextDocument(document, {
                 preview: false,
                 viewColumn: editor.viewColumn,
               });
               setTimeout(() => {
-                const pos = getPos(newPy, '<Rename new node>')
+                const pos = getPos(newPy, "<Rename new node>");
                 editor.selection = new vscode.Selection(
                   pos.line - 1,
                   pos.col - 1,
                   pos.line - 1,
                   pos.col + 16
                 );
-                vscode.commands.executeCommand("editor.action.selectHighlights")
+                vscode.commands.executeCommand("editor.action.selectHighlights");
               }, 10);
             }
           }
@@ -158,11 +152,7 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     return result.graph;
   }
 
-  private async addNode(
-    pythonCode: string,
-    parentId: number,
-    parentFlow: string
-  ): Promise<string> {
+  private async addNode(pythonCode: string, parentId: number, parentFlow: string): Promise<string> {
     const b64Py = Buffer.from(pythonCode, "utf-8").toString("base64");
     const result = (await this.runPythonScript("addsuggs", {
       pyData: b64Py,

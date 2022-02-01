@@ -24,18 +24,9 @@ function ResponseNode({ id, data }: { id: string; data: any }) {
   };
   return (
     <NodeCont className="react-flow__node react-flow__node-default selectable">
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{ background: "#555" }}
-      />
+      <Handle type="target" position={Position.Left} style={{ background: "#555" }} />
       {data.label}
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="a"
-        style={{ background: "#555" }}
-      />
+      <Handle type="source" position={Position.Right} id="a" style={{ background: "#555" }} />
       <div className={iconContClass}>
         <FcPlus size="2em" style={{ cursor: "pointer" }} onClick={onAdd} />
       </div>
@@ -90,12 +81,12 @@ const NodeCont = styled("div")({
   },
 });
 
-const Sidebar = styled('div')({
+const Sidebar = styled("div")({
   position: "absolute",
   width: "350px",
   right: 0,
   top: 0,
-  bottom: 0
-})
+  bottom: 0,
+});
 
 export default GraphEditor;

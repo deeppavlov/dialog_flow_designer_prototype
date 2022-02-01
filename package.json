@@ -5,15 +5,19 @@
 	"scripts": {
 		"vscode:prepublish": "npm run lint && npm run tsc && npm run build -- --minify",
 		"start": "npm run code && npm run watch",
+
 		"code": "code --extensionDevelopmentPath=${pwd} ./test/test-flows/",
 		"build": "npm run build-ext -- --minify && npm run build-webv -- --minify",
 		"watch": "concurrently \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" --names \"esbuild-main,esbuild-webview\"",
 		"build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
 		"build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
+
 		"tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
 		"lint": "eslint . --ext .ts,.tsx",
 		"format": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\"",
-		"prepare": "husky install"
+		"prepare": "husky install && npm run py:install",
+
+    "py:install": "cd python && python -m venv venv && venv/bin/pip install -r requirements.txt"
 	},
 	"engines": {
 		"vscode": "^1.47.0"

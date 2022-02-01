@@ -86,9 +86,6 @@ const getElements = (graph: Graph): Elements => {
 };
 
 export function useGraphElements(state: ViewState | null): Elements {
-  const elements = useMemo(
-    () => (state ? getElements(state.graph) : []),
-    [state?.graph]
-  );
+  const elements = useMemo(() => (state ? getElements(state.graph) : []), [state?.graph]);
   return elements;
 }
