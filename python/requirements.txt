@@ -1,2 +1,7 @@
+# Dev
+black
+flake8
+isort
+
+# Prod
 libcst
-lxml

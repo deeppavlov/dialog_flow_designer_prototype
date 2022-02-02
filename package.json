@@ -11,8 +11,8 @@
 		"build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
 		"build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
 		"tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
-		"lint": "eslint . --ext .ts,.tsx",
-		"format": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\"",
+		"lint": "eslint . --ext .ts,.tsx && cd python && venv/bin/python -m flake8 --exclude=venv",
+		"format": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\" && cd python && venv/bin/python -m black . && venv/bin/python -m isort .",
 		"prepare": "husky install && npm run py:prepare",
     "py:prepare": "cd python && python -m venv venv && npm run py:install",
     "py:install": "cd python && venv/bin/pip install -r requirements.txt",
@@ -75,6 +75,6 @@
 	},
 	"lint-staged": {
 		"*.{ts,tsx}": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\"",
-    "*.{py}": "python/venv/bin/python -m black python"
+    "*.py": "cd python && venv/bin/python -m black . && venv/bin/python -m isort . && venv/bin/python -m flake8 --exclude=venv"
 	}
 }

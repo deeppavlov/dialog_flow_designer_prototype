@@ -1,23 +1,27 @@
 #!/usr/bin/env python3.9
-import sys, pathlib
+import pathlib
+import sys
+
 deps_path = pathlib.Path(__file__).parent.absolute() / "deps.zip"
 sys.path.insert(0, str(deps_path))
 
 import ast
-import json
 import base64
+import json
+
 import libcst as cst
 
 # from grandalf.graphs import graph_core, Edge, Vertex, Graph
 # from grandalf.layouts import SugiyamaLayout,DigcoLayout,VertexViewer,Layer,DummyVertex
 # from grandalf.routing import EdgeViewer, route_with_rounded_corners
 
+
 class Node:
     """
     Representation of global or local nodes.
     """
 
-    def __init__(self, name, tr,  misc):
+    def __init__(self, name, tr, misc):
         self.name = name
         self.transitions = tr
         self.misc = misc
@@ -28,22 +32,19 @@ class Node:
         transitions = {}
         misc = ""
         for key, value in zip(node.keys, node.values):
-            if key.id == 'TRANSITIONS':
-                func_args = []
+            if key.id == "TRANSITIONS":
                 for tr_k, tr_v in zip(value.keys, value.values):
                     # Check type of target node data. If tuple, get flow and node names
                     target_title = ()
                     if isinstance(tr_k, ast.Tuple):  # Target node in another flow
                         if len(tr_k.elts) > 1:
-                            target_title = (
-                                tr_k.elts[0].value, tr_k.elts[1].value)
+                            target_title = (tr_k.elts[0].value, tr_k.elts[1].value)
                         else:  # Len of tuple < 1. Data is not correct.
                             continue
                     elif isinstance(tr_k, ast.Constant):  # Target node in the same flow
                         target_title = (flow_name, tr_k.value)
                     else:
-                        target_title = (flow_name, ast.get_source_segment(
-                            source, tr_k))
+                        target_title = (flow_name, ast.get_source_segment(source, tr_k))
 
                     # Check type of values in Transitions dict
                     if isinstance(tr_v, ast.Constant):
@@ -59,10 +60,11 @@ class Node:
                         for arg in tr_v.args:
                             func_args.append(arg.value)
                         tr_description = f'{tr_v.func.value.id}.{tr_v.func.attr}({", ".join(func_args)})'"""
-                        tr_description = ast.get_source_segment(
-                            source, tr_v)
+                        tr_description = ast.get_source_segment(source, tr_v)
                     elif isinstance(tr_v, ast.Attribute):
-                        tr_description = f"{ast.get_source_segment(source, tr_v.value)}.{tr_v.attr}"
+                        tr_description = (
+                            f"{ast.get_source_segment(source, tr_v.value)}.{tr_v.attr}"
+                        )
                     elif hasattr(tr_v, "value"):
                         tr_description = tr_v.value
                     elif hasattr(tr_v, "id"):
@@ -101,9 +103,8 @@ class Flows:
             "GLOBAL",
             "LOCAL",
             "TRANSITIONS",
-            "PROCESSING"
-            "RESPONSE",
-            "GLOBAL_TRANSITIONS"
+            "PROCESSING" "RESPONSE",
+            "GLOBAL_TRANSITIONS",
         ]
 
         # Initialize flows
@@ -127,14 +128,20 @@ class Flows:
                     flow_name = self.get_name(key)
                     # print('FLOW Name:', flow_name)
                     if flow_name == "GLOBAL":
-                        self.global_flow['GLOBAL'] = Node.parse_node(
-                            flow_name, flow_name, value, self.imports, self.source)
+                        self.global_flow["GLOBAL"] = Node.parse_node(
+                            flow_name, flow_name, value, self.imports, self.source
+                        )
                     else:
                         local_flow = {}
                         for node_key, node_val in zip(value.keys, value.values):
                             node_name = self.get_name(node_key)
                             local_flow[(flow_name, node_name)] = Node.parse_node(
-                                flow_name, node_name, node_val, self.imports, self.source)
+                                flow_name,
+                                node_name,
+                                node_val,
+                                self.imports,
+                                self.source,
+                            )
                         self.local_flows[flow_name] = local_flow
 
     def get_flow(self) -> ast.Assign:
@@ -188,12 +195,12 @@ def flow2graph(flow):
             edges = {}
             for path, description in node.transitions.items():
                 edges[path] = {"title": description, "id": node_id}
-                node_id += 3 # Each edge will need three cells
-            node_data['misc'] = node.misc
-            node_data['edges'] = edges
-            node_data['id'] = node_id
+                node_id += 3  # Each edge will need three cells
+            node_data["misc"] = node.misc
+            node_data["edges"] = edges
+            node_data["id"] = node_id
             nodes[local_flow][name] = node_data
-            node_id += 3 # Each node will need to ids
+            node_id += 3  # Each node will need to ids
     return nodes
 
 
@@ -206,63 +213,50 @@ def graph2json(graph):
     for flow_name, flow_data in graph.items():
         for node, data in flow_data.items():
             # sys.stderr.write(f"{node[1]}: {data['id']}\n")
-            nodes.append({
-                'type': 'response',
-                'data': {'label': node[1], 'flow': flow_name }
-            })
-            node_ids[data['id']] = len(nodes) - 1
+            nodes.append(
+                {"type": "response", "data": {"label": node[1], "flow": flow_name}}
+            )
+            node_ids[data["id"]] = len(nodes) - 1
 
     edges = []
     for _, flow_data in graph.items():
         for node, data in flow_data.items():
-            for target, edge_data in data['edges'].items():
+            for target, edge_data in data["edges"].items():
                 # sys.stderr.write(f"{edge_data}\n")
                 target_id = ""
                 try:
-                    target_id = flow_data[target]['id']
+                    target_id = flow_data[target]["id"]
                 except KeyError:
                     for _, f_data in graph.items():
                         try:
-                            target_id = f_data[target]['id']
+                            target_id = f_data[target]["id"]
                             break
                         except KeyError:
                             continue
                 if target_id == "":
                     continue
-                parsed = cst.parse_expression(edge_data['title'])
-                cndlist = []
+                parsed = cst.parse_expression(edge_data["title"])
                 if isinstance(parsed, cst.Call) and len(parsed.args) > 0:
-                    mod = cst.parse_module(edge_data['title'])
+                    mod = cst.parse_module(edge_data["title"])
                     if isinstance(parsed.args[0].value, cst.List):
-                        cndlist = [mod.code_for_node(el.value) for el in parsed.args[0].value.elements]
                         if isinstance(parsed.func, cst.Attribute):
                             title = parsed.func.attr.value.capitalize()
                         else:
-                            title = edge_data['title']
+                            title = edge_data["title"]
                     elif "sf" in mod.code_for_node(parsed.func):
                         title = mod.code_for_node(parsed.args[0])
                         # title= edge_data['title']
                     else:
-                        title = edge_data['title']
+                        title = edge_data["title"]
                 else:
-                    title = edge_data['title']
+                    title = edge_data["title"]
 
                 conn_node_id = len(nodes)
-                edges.append({
-                    'source': node_ids[data["id"]],
-                    'target': conn_node_id
-                })
-                nodes.append({
-                    'data': {'label': title}
-                })
-                edges.append({
-                    'source': conn_node_id,
-                    'target': node_ids[target_id]
-                })
-    return {
-        'nodes': nodes,
-        'edges': edges
-    }
+                edges.append({"source": node_ids[data["id"]], "target": conn_node_id})
+                nodes.append({"data": {"label": title}})
+                edges.append({"source": conn_node_id, "target": node_ids[target_id]})
+    return {"nodes": nodes, "edges": edges}
+
 
 # def layout(graph_dict):
 #     vertices = [ Vertex(n['data']['label']) for n in graph_dict['nodes'] ]
@@ -293,6 +287,6 @@ def py2json(content):
     return graph
 
 
-py_code = base64.b64decode(json.loads(sys.stdin.readline())['pycode']).decode('utf-8')
+py_code = base64.b64decode(json.loads(sys.stdin.readline())["pycode"]).decode("utf-8")
 data = py2json(py_code)
-json.dump({'graph': data}, sys.stdout)
+json.dump({"graph": data}, sys.stdout)

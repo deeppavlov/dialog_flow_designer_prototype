@@ -1,8 +1,9 @@
-import os, re
-from pathlib import Path
-from zipfile import ZipFile
+import os
+import re
 from glob import glob
+from pathlib import Path
 from typing import Set
+from zipfile import ZipFile
 
 pkgs_zip = Path("python", "deps.zip")
 pkgs_include = r".*libcst|mypy_extensions|typing_extensions|typing_inspect.*"
