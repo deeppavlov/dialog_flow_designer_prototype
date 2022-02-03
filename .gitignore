@@ -5,3 +5,4 @@ webview/*.js
 venv
 python/deps.zip
 __pycache__
+.coverage

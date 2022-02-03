@@ -18,7 +18,8 @@
     "py:prepare": "cd python && python -m venv venv && npm run py:install",
     "py:install": "cd python && venv/bin/pip install -r requirements.txt",
     "py:package": "python python/pydeps.py",
-    "py:test": "cd python && venv/bin/python -m pytest"
+    "py:test": "cd python && venv/bin/python -m pytest",
+    "py:coverage": "cd python && venv/bin/python -m pytest --cov-config=.coveragerc --cov=. tests/"
   },
   "engines": {
     "vscode": "^1.47.0"
