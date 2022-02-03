@@ -1,80 +1,87 @@
 {
-	"name": "DD-IDDE",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"vscode:prepublish": "npm run py:package && npm run lint && npm run tsc && npm run build -- --minify",
-		"start": "npm run code && npm run watch",
-		"code": "code --extensionDevelopmentPath=${pwd} ./test/test-flows/",
-		"build": "npm run build-ext -- --minify && npm run build-webv -- --minify",
-		"watch": "concurrently \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" --names \"esbuild-main,esbuild-webview\"",
-		"build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
-		"build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
-		"tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
-		"lint": "eslint . --ext .ts,.tsx && cd python && venv/bin/python -m flake8 --exclude=venv",
-		"format": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\" && cd python && venv/bin/python -m black . && venv/bin/python -m isort .",
-		"prepare": "husky install && npm run py:prepare",
+  "name": "DD-IDDE",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "vscode:prepublish": "npm run py:package && npm run lint && npm run tsc && npm run build -- --minify",
+    "start": "npm run code && npm run watch",
+    "test": "npm run py:test",
+    "code": "code --extensionDevelopmentPath=${pwd} ./test/test-flows/",
+    "build": "npm run build-ext -- --minify && npm run build-webv -- --minify",
+    "watch": "concurrently \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" --names \"esbuild-main,esbuild-webview\"",
+    "build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
+    "build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
+    "tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
+    "lint": "eslint . --ext .ts,.tsx && cd python && venv/bin/python -m flake8 --exclude=venv",
+    "format": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\" && cd python && venv/bin/python -m black . && venv/bin/python -m isort .",
+    "prepare": "husky install && npm run py:prepare",
     "py:prepare": "cd python && python -m venv venv && npm run py:install",
     "py:install": "cd python && venv/bin/pip install -r requirements.txt",
-    "py:package": "python python/pydeps.py"
-	},
-	"engines": {
-		"vscode": "^1.47.0"
-	},
-	"main": "./dist/main.js",
-	"activationEvents": [
-		"onCustomEditor:deeppavlov.dd-idde-graph"
-	],
-	"contributes": {
-		"customEditors": [
-			{
-				"viewType": "deeppavlov.dd-idde-graph",
-				"displayName": "DD-IDDE Dialog Designer",
-				"selector": [
-					{
-						"filenamePattern": "*.py"
-					}
-				],
-				"priority": "option"
-			}
-		]
-	},
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		}
-	},
-	"devDependencies": {
-		"@types/dagre": "^0.7.46",
-		"@types/node": "^12.12.0",
-		"@types/react": "^17.0.34",
-		"@types/react-dom": "^17.0.11",
-		"@types/vscode": "^1.47.0",
-		"@types/vscode-webview": "^1.57.0",
-		"@typescript-eslint/eslint-plugin": "^4.33.0",
-		"@typescript-eslint/parser": "^4.33.0",
-		"concurrently": "^6.4.0",
-		"esbuild": "^0.13.13",
-		"eslint": "^7.32.0",
-		"husky": "^7.0.4",
-		"lint-staged": "^12.3.1",
-		"prettier-eslint": "^13.0.0",
-		"prettier-eslint-cli": "^5.0.1",
-		"typescript": "^4.4.4"
-	},
-	"dependencies": {
-		"csstype": "^2.6.2",
-		"dagre": "^0.8.5",
-		"goober": "^2.0.43",
-		"nanoid": "^3.1.30",
-		"python-shell": "^3.0.1",
-		"react": "^17.0.2",
-		"react-dom": "^17.0.2",
-		"react-flow-renderer": "^9.6.11",
-		"react-icons": "^4.3.1"
-	},
-	"lint-staged": {
-		"*.{ts,tsx}": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\"",
+    "py:package": "python python/pydeps.py",
+    "py:test": "cd python && venv/bin/python -m pytest"
+  },
+  "engines": {
+    "vscode": "^1.47.0"
+  },
+  "main": "./dist/main.js",
+  "activationEvents": [
+    "onCustomEditor:deeppavlov.dd-idde-graph"
+  ],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "deeppavlov.dd-idde-graph",
+        "displayName": "DD-IDDE Dialog Designer",
+        "selector": [
+          {
+            "filenamePattern": "*.py"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "devDependencies": {
+    "@types/dagre": "^0.7.46",
+    "@types/node": "^12.12.0",
+    "@types/react": "^17.0.34",
+    "@types/react-dom": "^17.0.11",
+    "@types/vscode": "^1.47.0",
+    "@types/vscode-webview": "^1.57.0",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
+    "concurrently": "^6.4.0",
+    "esbuild": "^0.13.13",
+    "eslint": "^7.32.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.1",
+    "prettier-eslint": "^13.0.0",
+    "prettier-eslint-cli": "^5.0.1",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "csstype": "^2.6.2",
+    "dagre": "^0.8.5",
+    "goober": "^2.0.43",
+    "nanoid": "^3.1.30",
+    "python-shell": "^3.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-flow-renderer": "^9.6.11",
+    "react-icons": "^4.3.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run test"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\"",
     "*.py": "cd python && venv/bin/python -m black . && venv/bin/python -m isort . && venv/bin/python -m flake8 --exclude=venv"
-	}
+  }
 }

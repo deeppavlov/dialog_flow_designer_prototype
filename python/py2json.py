@@ -9,12 +9,6 @@ import ast
 import base64
 import json
 
-import libcst as cst
-
-# from grandalf.graphs import graph_core, Edge, Vertex, Graph
-# from grandalf.layouts import SugiyamaLayout,DigcoLayout,VertexViewer,Layer,DummyVertex
-# from grandalf.routing import EdgeViewer, route_with_rounded_corners
-
 
 class Node:
     """
@@ -32,7 +26,7 @@ class Node:
         transitions = {}
         misc = ""
         for key, value in zip(node.keys, node.values):
-            if key.id == "TRANSITIONS":
+            if key.id == "TRANSITIONS" and isinstance(value, ast.Dict):
                 for tr_k, tr_v in zip(value.keys, value.values):
                     # Check type of target node data. If tuple, get flow and node names
                     target_title = ()
@@ -47,31 +41,31 @@ class Node:
                         target_title = (flow_name, ast.get_source_segment(source, tr_k))
 
                     # Check type of values in Transitions dict
-                    if isinstance(tr_v, ast.Constant):
-                        tr_description = f'"{tr_v.value}"'
-                    elif isinstance(tr_v, ast.Call):
-                        # print(ast.get_source_segment(content, tr_v))
-                        # Check imports and functions
-                        """try:
-                            imports[tr_v.func.value.id]
-                        except KeyError:
-                            # print(f'Missing Function "{tr_v.func.value.id}": Show Error Message in VS Code')
-                            ...
-                        for arg in tr_v.args:
-                            func_args.append(arg.value)
-                        tr_description = f'{tr_v.func.value.id}.{tr_v.func.attr}({", ".join(func_args)})'"""
-                        tr_description = ast.get_source_segment(source, tr_v)
-                    elif isinstance(tr_v, ast.Attribute):
-                        tr_description = (
-                            f"{ast.get_source_segment(source, tr_v.value)}.{tr_v.attr}"
-                        )
-                    elif hasattr(tr_v, "value"):
-                        tr_description = tr_v.value
-                    elif hasattr(tr_v, "id"):
-                        tr_description = tr_v.id
-                    else:
-                        tr_description = '""'
-                    transitions[target_title] = tr_description
+                    # if isinstance(tr_v, ast.Constant):
+                    #     tr_description = f'"{tr_v.value}"'
+                    # elif isinstance(tr_v, ast.Call):
+                    #     # print(ast.get_source_segment(content, tr_v))
+                    #     # Check imports and functions
+                    #     """try:
+                    #         imports[tr_v.func.value.id]
+                    #     except KeyError:
+                    #         # print(f'Missing Function "{tr_v.func.value.id}": Show Error Message in VS Code')
+                    #         ...
+                    #     for arg in tr_v.args:
+                    #         func_args.append(arg.value)
+                    #     tr_description = f'{tr_v.func.value.id}.{tr_v.func.attr}({", ".join(func_args)})'"""
+                    #     tr_description = ast.get_source_segment(source, tr_v)
+                    # elif isinstance(tr_v, ast.Attribute):
+                    #     tr_description = (
+                    #         f"{ast.get_source_segment(source, tr_v.value)}.{tr_v.attr}"
+                    #     )
+                    # elif hasattr(tr_v, "value"):
+                    #     tr_description = tr_v.value
+                    # elif hasattr(tr_v, "id"):
+                    #     tr_description = tr_v.id
+                    # else:
+                    #     tr_description = '""'
+                    transitions[target_title] = ast.get_source_segment(source, tr_v)
             elif key.id == "MISC":
                 misc = []
                 if not isinstance(value, ast.Dict):
@@ -213,9 +207,7 @@ def graph2json(graph):
     for flow_name, flow_data in graph.items():
         for node, data in flow_data.items():
             # sys.stderr.write(f"{node[1]}: {data['id']}\n")
-            nodes.append(
-                {"type": "response", "data": {"label": node[1], "flow": flow_name}}
-            )
+            nodes.append({"label": node[1], "flow": flow_name})
             node_ids[data["id"]] = len(nodes) - 1
 
     edges = []
@@ -235,27 +227,30 @@ def graph2json(graph):
                             continue
                 if target_id == "":
                     continue
-                parsed = cst.parse_expression(edge_data["title"])
-                if isinstance(parsed, cst.Call) and len(parsed.args) > 0:
-                    mod = cst.parse_module(edge_data["title"])
-                    if isinstance(parsed.args[0].value, cst.List):
-                        if isinstance(parsed.func, cst.Attribute):
-                            title = parsed.func.attr.value.capitalize()
-                        else:
-                            title = edge_data["title"]
-                    elif "sf" in mod.code_for_node(parsed.func):
-                        title = mod.code_for_node(parsed.args[0])
-                        # title= edge_data['title']
-                    else:
-                        title = edge_data["title"]
-                else:
-                    title = edge_data["title"]
+                # parsed = cst.parse_expression(edge_data["title"])
+                # if isinstance(parsed, cst.Call) and len(parsed.args) > 0:
+                #     mod = cst.parse_module(edge_data["title"])
+                #     if isinstance(parsed.args[0].value, cst.List):
+                #         if isinstance(parsed.func, cst.Attribute):
+                #             title = parsed.func.attr.value.capitalize()
+                #         else:
+                #             title = edge_data["title"]
+                #     elif "sf" in mod.code_for_node(parsed.func):
+                #         title = mod.code_for_node(parsed.args[0])
+                #         # title= edge_data['title']
+                #     else:
+                #         title = edge_data["title"]
+                # else:
+                #     title = edge_data["title"]
 
-                conn_node_id = len(nodes)
-                edges.append({"source": node_ids[data["id"]], "target": conn_node_id})
-                nodes.append({"data": {"label": title}})
-                edges.append({"source": conn_node_id, "target": node_ids[target_id]})
-    return {"nodes": nodes, "edges": edges}
+                edges.append(
+                    {
+                        "source": node_ids[data["id"]],
+                        "target": node_ids[target_id],
+                        "condition": edge_data["title"],
+                    }
+                )
+    return {"nodes": nodes, "transitions": edges}
 
 
 # def layout(graph_dict):
@@ -287,6 +282,9 @@ def py2json(content):
     return graph
 
 
-py_code = base64.b64decode(json.loads(sys.stdin.readline())["pycode"]).decode("utf-8")
-data = py2json(py_code)
-json.dump({"graph": data}, sys.stdout)
+if __name__ == "__main__":
+    py_code = base64.b64decode(json.loads(sys.stdin.readline())["pycode"]).decode(
+        "utf-8"
+    )
+    data = py2json(py_code)
+    json.dump({"graph": data}, sys.stdout)

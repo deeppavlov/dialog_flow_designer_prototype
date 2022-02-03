@@ -154,7 +154,7 @@ class ValueUpdate:
         return NotImplemented
 
 
-def find_flow(py_tree: cst.Module) -> Optional[cst.Dict]:
+def find_plot(py_tree: cst.Module) -> Optional[cst.Dict]:
     for line in py_tree.body:
         # It's an assign
         if isinstance(line.body, cst.BaseSuite) or not isinstance(
@@ -185,7 +185,7 @@ def find_flow(py_tree: cst.Module) -> Optional[cst.Dict]:
         )
         if not flows_all_have_dicts:
             continue
-        # All nodes have TRANSITIONS key
+        # All nodes have at least one DFF key
         nodes = [
             cst.ensure_type(el.value, cst.Dict)
             for flow in flow_dicts
@@ -193,7 +193,9 @@ def find_flow(py_tree: cst.Module) -> Optional[cst.Dict]:
         ]
         all_nodes = all(
             any(
-                m.matches(el, m.DictElement(key=m.Name("TRANSITIONS")))
+                isinstance(el, cst.DictElement)
+                and isinstance(el.key, cst.Name)
+                and el.key.value in ("TRANSITIONS", "RESPONSE", "PROCESSING", "MISC")
                 for el in node.elements
             )
             for node in nodes

@@ -13,7 +13,7 @@ from typing import cast
 import libcst as cst
 from libcst.metadata import CodeRange, PositionProvider
 
-from parse import DictUpdate, ListUpdate, NodeVisitor, ValueUpdate, find_flow
+from parse import DictUpdate, ListUpdate, NodeVisitor, ValueUpdate, find_plot
 
 
 class CustomCondFinder(cst.CSTVisitor):
@@ -60,7 +60,7 @@ if sfc != "":
 update = DictUpdate.from_dict(update_dict)
 
 module = cst.parse_module(python_code)
-old_flow = find_flow(module)
+old_flow = find_plot(module)
 ret = {}
 if old_flow:
     sys.stderr.write("visit:\n")
