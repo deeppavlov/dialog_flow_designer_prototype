@@ -1,34 +1,54 @@
+import json
 from typing import Dict, List, Set, Tuple
 
-from py2json import py2json
+import jsonschema
+
+from server import DfDslConverter
 
 from .dff_plots import (
     code_with_one_flow,
-    code_with_plots,
+    code_with_vars,
+    dslnode,
     empty_plot,
+    fake_plot_no_flow,
     flow_with_nodes,
+    func_prsd,
+    grnode_str,
+    grtrans,
+    name_prsd,
     plot_with_flows,
+    str_prsd,
+    transitions,
 )
 
 
-def dict_to_tuple(d: Dict) -> Tuple:
-    return tuple(d[key] for key in sorted(d))
+def cmp_graphs(g1, g2):
+    def dictlist_to_set(lst: List[Dict]) -> Set[Tuple]:
+        return set(tuple(d[key] for key in sorted(d)) for d in lst)
+
+    assert dictlist_to_set(g1["nodes"]) == dictlist_to_set(g2["nodes"])
+    assert dictlist_to_set(g1["transitions"]) == dictlist_to_set(g2["transitions"])
 
 
-def cmpable_list(lst: List[Dict]) -> Set[Tuple]:
-    return set(dict_to_tuple(el) for el in lst)
+with open("../schemas/graph.json") as schema_file:
+    graph_schema = json.load(schema_file)
 
 
-def cmp_graphs(graph1, graph2):
-    assert cmpable_list(graph1["nodes"]) == cmpable_list(graph2["nodes"])
-    assert cmpable_list(graph1["transitions"]) == cmpable_list(graph2["transitions"])
+def validate_graph(graph):
+    jsonschema.validate(instance=graph, schema=graph_schema)
+
+
+def py2graph(src: str):
+    server = DfDslConverter()
+    return server.dsl_to_graph("test.py", src)
 
 
 def test_converts_empty_plot():
-    src = code_with_plots(empty_plot)
-    graph = py2json(src)
+    src = code_with_vars(empty_plot)
+    graph = py2graph(src)
+    validate_graph(graph)
     target = {
-        "nodes": [{"label": "start_node", "flow": "flow"}],
+        "nodes": [grnode_str("start_node", "flow")],
         "transitions": [],
     }
     cmp_graphs(graph, target)
@@ -37,179 +57,426 @@ def test_converts_empty_plot():
 def test_converts_single_transition():
     cond = 'cnd.regex_match(r"hello")'
     src = code_with_one_flow(
-        '{ TRANSITIONS: { "node1": %s }, RESPONSE: "hello" }' % cond,
-        '{ TRANSITIONS: {}, RESPONSE: "how are you" }',
+        dslnode({'"node1"': cond}, response='"hello"'),
+        dslnode({}, response='"how are you"'),
     )
-    graph = py2json(src)
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond_parsed = func_prsd("cnd.regex_match", str_prsd("hello", "r"))
     target = {
         "nodes": [
-            {"label": "node0", "flow": "flow0"},
-            {"label": "node1", "flow": "flow0"},
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
         ],
-        "transitions": [{"source": 0, "target": 1, "condition": cond}],
+        "transitions": [grtrans(0, 1, cond_parsed)],
     }
     cmp_graphs(graph, target)
+
+
+def test_returns_error_if_target_node_is_not_found():
+    cond = 'cnd.regex_match(r"hello")'
+    src = code_with_one_flow(
+        dslnode({'"node1"': cond}, response='"hello"'),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    assert graph["nodes"][0]["error"] == "transition_target_not_found"
 
 
 def test_converts_branching_transition():
     cond1 = 'cnd.regex_match("hello")'
     cond2 = 'cnd.regex_match("bye")'
     src = code_with_one_flow(
-        '{ TRANSITIONS: { "node1": %s, "node2": %s }, RESPONSE: "hello" }'
-        % (cond1, cond2),
-        '{ TRANSITIONS: {}, RESPONSE: "how are you" }',
-        '{ TRANSITIONS: {}, RESPONSE: "bye" }',
+        dslnode({'"node1"': cond1, '"node2"': cond2}, response='"hello"'),
+        dslnode({}, response='"how are you"'),
+        dslnode({}, response='"bye"'),
     )
-    graph = py2json(src)
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond1_parsed = func_prsd("cnd.regex_match", str_prsd("hello"))
+    cond2_parsed = func_prsd("cnd.regex_match", str_prsd("bye"))
     target = {
         "nodes": [
-            {"label": "node0", "flow": "flow0"},
-            {"label": "node1", "flow": "flow0"},
-            {"label": "node2", "flow": "flow0"},
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+            grnode_str("node2", "flow0"),
         ],
         "transitions": [
-            {"source": 0, "target": 1, "condition": cond1},
-            {"source": 0, "target": 2, "condition": cond2},
+            grtrans(0, 1, cond1_parsed),
+            grtrans(0, 2, cond2_parsed),
         ],
     }
     cmp_graphs(graph, target)
+
+
+def test_correctly_parses_lbl_forward():
+    cond = 'cnd.regex_match(r"hello")'
+    src = code_with_one_flow(
+        dslnode({"lbl.forward()": cond}, response='"hello"'),
+        dslnode({}, response='"how are you"'),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond_parsed = func_prsd("cnd.regex_match", str_prsd("hello", "r"))
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+        ],
+        "transitions": [grtrans(0, 1, cond_parsed)],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_correctly_parses_lbl_backward():
+    cond = 'cnd.regex_match(r"hello")'
+    src = code_with_one_flow(
+        dslnode({'"node1"': cond}, response='"hello"'),
+        dslnode({"lbl.backward()": cond}, response='"how are you"'),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond_parsed = func_prsd("cnd.regex_match", str_prsd("hello", "r"))
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+        ],
+        "transitions": [grtrans(0, 1, cond_parsed), grtrans(1, 0, cond_parsed)],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_correctly_parses_lbl_repeat():
+    cond = 'cnd.regex_match(r"hello")'
+    src = code_with_one_flow(
+        dslnode({"lbl.repeat()": cond}, response='"how are you"'),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond_parsed = func_prsd("cnd.regex_match", str_prsd("hello", "r"))
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+        ],
+        "transitions": [grtrans(0, -1, cond_parsed, "repeat")],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_transition_labeled_if_target_is_not_parsable():
+    cond = 'cnd.regex_match(r"hello")'
+    src = code_with_one_flow(
+        dslnode({"unknown_label()": cond}, response='"hello"'),
+        dslnode({}, response='"how are you"'),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond_parsed = func_prsd("cnd.regex_match", str_prsd("hello", "r"))
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+        ],
+        "transitions": [grtrans(0, -1, cond_parsed, "unknown_label()")],
+    }
+    cmp_graphs(graph, target)
+    assert graph["transitions"][0]["error"] == "unparsable_transition_target"
 
 
 def test_transition_to_other_flow():
     cond1 = 'cnd.regex_match("hello")'
     cond2 = 'cnd.regex_match("bye")'
-    src = code_with_plots(
+    src = code_with_vars(
         plot_with_flows(
             flow_with_nodes(
-                """{ TRANSITIONS: {
-                        ("flow0", "node1"): %s,
-                        ("flow1", "node0"): %s
-                    },
-                    RESPONSE: "hello" }"""
-                % (cond1, cond2),
-                '{ TRANSITIONS: {}, RESPONSE: "how are you" }',
+                dslnode(
+                    {'("flow0", "node1")': cond1, '("flow1", "node0")': cond2},
+                    response='"hello"',
+                ),
+                dslnode({}, response='"how are you"'),
             ),
-            flow_with_nodes('{ TRANSITIONS: {}, RESPONSE: "bye" }'),
+            flow_with_nodes(dslnode({}, response='"bye"')),
         )
     )
-    graph = py2json(src)
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond1_parsed = func_prsd("cnd.regex_match", str_prsd("hello"))
+    cond2_parsed = func_prsd("cnd.regex_match", str_prsd("bye"))
     target = {
         "nodes": [
-            {"label": "node0", "flow": "flow0"},
-            {"label": "node1", "flow": "flow0"},
-            {"label": "node0", "flow": "flow1"},
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+            grnode_str("node0", "flow1"),
         ],
         "transitions": [
-            {"source": 0, "target": 1, "condition": cond1},
-            {"source": 0, "target": 2, "condition": cond2},
+            grtrans(0, 1, cond1_parsed),
+            grtrans(0, 2, cond2_parsed),
         ],
     }
     cmp_graphs(graph, target)
 
 
-def test_condition_can_be_any_type():
+def test_condition_is_parsed():
     conds = [
         'cnd.regex_match("hello")',  # attribute
         'regex_match("hello")',  # function call
         "cnd",  # name
-        'f"condition"',  # string
+    ]
+    src = code_with_one_flow(
+        dslnode(
+            {f"node{i + 1}": cond for i, cond in enumerate(conds)}, response='"hello"'
+        ),
+        *([dslnode({}, response='"how are you"')] * len(conds)),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    conds_parsed = [
+        func_prsd("cnd.regex_match", str_prsd("hello")),
+        func_prsd("regex_match", str_prsd("hello")),
+        name_prsd("cnd"),
+    ]
+    target = {
+        "nodes": [grnode_str(f"node{i}", "flow0") for i in range(len(conds) + 1)],
+        "transitions": [grtrans(0, i + 1, cond) for i, cond in enumerate(conds_parsed)],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_parsed_nested_function_conditions():
+    # fmt: off
+    cond = (
+        "cnd.all("
+            "cnd.any("  # noqa: E131
+                'cnd.exact_match("hello"),'  # noqa: E131
+                'cnd.regex_match(r"hey|hello?"),'  # noqa: E131
+            "),"
+            "cnd.any("
+                'cnd.exact_match(get_string("greet"))'
+            ")"  # noqa: E131
+        ")"
+    )
+    # fmt: on
+    src = code_with_one_flow(
+        dslnode({'"node1"': cond}, response='"hello"'),
+        dslnode({}, response='"how are you"'),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond_parsed = func_prsd(
+        "cnd.all",
+        func_prsd(
+            "cnd.any",
+            func_prsd("cnd.regex_match", str_prsd("hello")),
+            func_prsd("cnd.regex_match", str_prsd("hey|hello?", "r")),
+        ),
+        func_prsd(
+            "cnd.any",
+            func_prsd("cnd.exact_match", func_prsd("get_string", str_prsd("greet"))),
+        ),
+    )
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+        ],
+        "transitions": [grtrans(0, 1, cond_parsed)],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_returns_error_if_condition_invalid():
+    invalid_conds = [
+        "12",  # number
+        "f'condition'",  # string
         '(r"string", cnd)',  # tuple
     ]
-
-    src = code_with_one_flow(
-        '{ TRANSITIONS: {%s}, RESPONSE: "hello" }'
-        % ", ".join(f"node{i + 1}: {cond}" for i, cond in enumerate(conds)),
-        *(['{ TRANSITIONS: {}, RESPONSE: "how are you" }'] * len(conds)),
-    )
-    graph = py2json(src)
-    target = {
-        "nodes": [
-            {"label": f"node{i}", "flow": "flow0"} for i in range(len(conds) + 1)
-        ],
-        "transitions": [
-            {"source": 0, "target": i + 1, "condition": cond}
-            for i, cond in enumerate(conds)
-        ],
-    }
-    cmp_graphs(graph, target)
-
-
-def test_transition_key_can_be_non_string():
-    cond = 'cnd.regex_match(r"hello")'
-    src = code_with_one_flow(
-        '{ TRANSITIONS: { lbl.forward(1): %s }, RESPONSE: "hello" }' % cond,
-        '{ TRANSITIONS: {}, RESPONSE: "how are you" }',
-    )
-    graph = py2json(src)
-    target = {
-        "nodes": [
-            {"label": "node0", "flow": "flow0"},
-            {"label": "node1", "flow": "flow0"},
-        ],
-        "transitions": [],
-    }
-    cmp_graphs(graph, target)
-
-
-def test_transitions_can_be_not_a_dictionary():
-    src = code_with_one_flow(
-        '{ TRANSITIONS: not_a_dict, RESPONSE: "hello" }',
-        '{ TRANSITIONS: {}, RESPONSE: "how are you" }',
-    )
-    graph = py2json(src)
-    target = {
-        "nodes": [
-            {"label": "node0", "flow": "flow0"},
-            {"label": "node1", "flow": "flow0"},
-        ],
-        "transitions": [],
-    }
-    cmp_graphs(graph, target)
+    for cond in invalid_conds:
+        src = code_with_one_flow(
+            dslnode({'"node1"': cond}, response='"hello"'),
+            dslnode({}, response='"hello"'),
+        )
+        graph = py2graph(src)
+        validate_graph(graph)
+        assert graph["nodes"][0]["error"] == "invalid_condition"
 
 
 def test_more_complex_plot():
     cond1 = 'cnd.regex_match("hello")'
     cond2 = 'cnd.regex_match("bye")'
     cond3 = 'cnd.exact_match("hey again")'
-    src = code_with_plots(
+    src = code_with_vars(
         plot_with_flows(
             flow_with_nodes(
-                """{ TRANSITIONS: {
-                        ("flow0", "node1"): %s,
-                        ("flow2", "node0"): %s
-                    },
-                    RESPONSE: "hello" }"""
-                % (cond1, cond2),
-                '{ TRANSITIONS: {("flow1", "node0"): %s}, RESPONSE: "how are you" }'
-                % cond3,
+                dslnode(
+                    {'("flow0", "node1")': cond1, '("flow2", "node0")': cond2},
+                    response='"hello"',
+                ),
+                dslnode({'("flow1", "node0")': cond3}, response='"how are you"'),
             ),
             flow_with_nodes(
-                """{ TRANSITIONS: {
-                        ("flow0", "node0"): %s,
-                        ("flow2", "node0"): %s
-                    },
-                    RESPONSE: "hello" }"""
-                % (cond3, cond2),
-                '{ TRANSITIONS: {}, RESPONSE: "how are you" }',
+                dslnode(
+                    {'("flow0", "node0")': cond3, '("flow2", "node0")': cond2},
+                    response='"hello"',
+                ),
+                dslnode({}, response='"how are you"'),
             ),
-            flow_with_nodes('{ TRANSITIONS: {}, RESPONSE: "bye" }'),
+            flow_with_nodes(dslnode({}, response='"how are you"')),
         )
     )
-    graph = py2json(src)
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond1_parsed = func_prsd("cnd.regex_match", str_prsd("hello"))
+    cond2_parsed = func_prsd("cnd.regex_match", str_prsd("bye"))
+    cond3_parsed = func_prsd("cnd.exact_match", str_prsd("hey again"))
     target = {
         "nodes": [
-            {"label": "node0", "flow": "flow0"},
-            {"label": "node1", "flow": "flow0"},
-            {"label": "node0", "flow": "flow1"},
-            {"label": "node1", "flow": "flow1"},
-            {"label": "node0", "flow": "flow2"},
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+            grnode_str("node0", "flow1"),
+            grnode_str("node1", "flow1"),
+            grnode_str("node0", "flow2"),
         ],
         "transitions": [
-            {"source": 0, "target": 1, "condition": cond1},
-            {"source": 0, "target": 4, "condition": cond2},
-            {"source": 1, "target": 2, "condition": cond3},
-            {"source": 2, "target": 0, "condition": cond3},
-            {"source": 2, "target": 4, "condition": cond2},
+            grtrans(0, 1, cond1_parsed),
+            grtrans(0, 4, cond2_parsed),
+            grtrans(1, 2, cond3_parsed),
+            grtrans(2, 0, cond3_parsed),
+            grtrans(2, 4, cond2_parsed),
+        ],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_returns_parse_error_on_graph_if_not_valid_python():
+    src = "plot = {"
+    graph = py2graph(src)
+    validate_graph(graph)
+    assert graph["error"] == "parse_error"
+
+
+def test_returns_no_plot_error_if_there_is_no_valid_plot():
+    src = code_with_vars(fake_plot_no_flow)
+    graph = py2graph(src)
+    validate_graph(graph)
+    assert graph["error"] == "no_plot"
+
+
+def test_finds_flow_in_separate_variable_in_same_module():
+    cond1 = 'cnd.regex_match("hello")'
+    cond2 = 'cnd.regex_match("bye")'
+    src = code_with_vars(
+        flow_with_nodes(
+            dslnode(
+                {'("flow0", "node1")': cond1, '("flow1", "node0")': cond2},
+                response='"hello"',
+            ),
+            dslnode({}, response='"how are you"'),
+        ),
+        plot_with_flows(
+            "var0",
+            flow_with_nodes(dslnode({}, response='"how are you"')),
+        ),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond1_parsed = func_prsd("cnd.regex_match", str_prsd("hello"))
+    cond2_parsed = func_prsd("cnd.regex_match", str_prsd("bye"))
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+            grnode_str("node0", "flow1"),
+        ],
+        "transitions": [
+            grtrans(0, 1, cond1_parsed),
+            grtrans(0, 2, cond2_parsed),
+        ],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_returns_error_if_separate_flow_not_found():
+    src = code_with_vars(
+        plot_with_flows(
+            "var0",
+            flow_with_nodes(dslnode({}, response='"how are you"')),
+        ),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    assert graph["error"] == "flow_not_found"
+
+
+def test_finds_transitions_in_separate_variable_in_same_module():
+    cond = 'cnd.regex_match("hello")'
+    src = code_with_vars(
+        transitions({'"node1"': cond}),
+        plot_with_flows(
+            flow_with_nodes(
+                dslnode("var0", response='"hello"'),
+                dslnode({}, response='"how are you"'),
+            ),
+        ),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond_parsed = func_prsd("cnd.regex_match", str_prsd("hello"))
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+        ],
+        "transitions": [
+            grtrans(0, 1, cond_parsed),
+        ],
+    }
+    cmp_graphs(graph, target)
+
+
+def test_returns_error_if_transitions_not_found():
+    src = code_with_vars(
+        plot_with_flows(
+            flow_with_nodes(
+                dslnode("var0", response='"hello"'),
+                dslnode({}, response='"how are you"'),
+            ),
+        ),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    assert graph["nodes"][0]["error"] == "transitions_not_found"
+
+
+def test_recursively_resolve_references():
+    cond1 = 'cnd.regex_match("hello")'
+    cond2 = 'cnd.regex_match("bye")'
+    src = code_with_vars(
+        transitions({'("flow0", "node1")': cond1, '("flow1", "node0")': cond2}),
+        "var0",
+        flow_with_nodes(
+            dslnode("var1", response='"hello"'),
+            dslnode({}, response='"how are you"'),
+        ),
+        plot_with_flows(
+            "var0",
+            flow_with_nodes(dslnode({}, response='"how are you"')),
+        ),
+    )
+    graph = py2graph(src)
+    validate_graph(graph)
+    cond1_parsed = func_prsd("cnd.regex_match", str_prsd("hello"))
+    cond2_parsed = func_prsd("cnd.regex_match", str_prsd("bye"))
+    target = {
+        "nodes": [
+            grnode_str("node0", "flow0"),
+            grnode_str("node1", "flow0"),
+            grnode_str("node0", "flow1"),
+        ],
+        "transitions": [
+            grtrans(0, 1, cond1_parsed),
+            grtrans(0, 2, cond2_parsed),
         ],
     }
     cmp_graphs(graph, target)
