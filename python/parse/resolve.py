@@ -1,5 +1,6 @@
 """Functions for extracting structured information from a parsed libCST tree."""
 
+import contextlib
 from typing import Any, Mapping, Tuple, Type, TypeVar
 
 import libcst as cst
@@ -7,9 +8,19 @@ from libcst import matchers as m
 from libcst import metadata
 
 T = TypeVar("T")
-E = TypeVar("E")
-K = TypeVar("K")
-V = TypeVar("V")
+
+
+def _ensure_type(node: cst.CSTNode, nodetype: Type[T]) -> T:
+    """Same as libcst.ensure_type, but raises a ResolveError instead of an Exception."""
+    if not isinstance(node, nodetype):
+        raise ResolveError(
+            f"Expected a {nodetype.__name__} but got a {node.__class__.__name__}!"
+        )
+    return node
+
+
+class ResolveError(Exception):
+    pass
 
 
 class Resolver:
@@ -37,15 +48,15 @@ class Resolver:
             target_type: The expected type of the final defintion.
 
         Raises:
-            Exception: Defintion not found inside the module.
+            ResolveError: Defintion not found inside the module.
 
         Returns:
             cst.BaseExpression: The referenced value.
         """
         if isinstance(ref, target_type):
             return ref
-        ref = cst.ensure_type(ref, cst.Name)
-        return cst.ensure_type(self._recurse_ref(ref, target_type), target_type)
+        ref = _ensure_type(ref, cst.Name)
+        return _ensure_type(self._recurse_ref(ref, target_type), target_type)
 
     def get_from_dict(
         self,
@@ -60,7 +71,7 @@ class Resolver:
                 we want.
 
         Raises:
-            Exception: No key matches the given matcher.
+            ResolveError: No key matches the given matcher.
 
         Returns:
             cst.BaseExpression: Value of the matched key.
@@ -68,7 +79,7 @@ class Resolver:
         node = self(node, cst.Dict)
         res = m.findall(node, m.DictElement(key=key))
         if len(res) != 1:
-            raise Exception(f"{key} not found")
+            raise ResolveError(f"{key} not found")
         return res[0].value
 
     def get_code(self, node: cst.BaseExpression):
@@ -83,17 +94,13 @@ class Resolver:
                 # FunctionDef or ClassDef
                 return assign.node
             # Try getting the assign value
-            try:
-                node = cst.ensure_type(assign.node, cst.Name)
-                assign_target = cst.ensure_type(
-                    self.parent_data[node], cst.AssignTarget
-                )
-                assign = cst.ensure_type(self.parent_data[assign_target], cst.Assign)
+            with contextlib.suppress(ResolveError):
+                node = _ensure_type(assign.node, cst.Name)
+                assign_target = _ensure_type(self.parent_data[node], cst.AssignTarget)
+                assign = _ensure_type(self.parent_data[assign_target], cst.Assign)
                 value = assign.value
                 if isinstance(value, cst.Name):
                     value = self._recurse_ref(value, target_type)
                 if isinstance(value, target_type):
                     return value
-            except Exception:
-                pass
         return None

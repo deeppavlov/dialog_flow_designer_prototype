@@ -180,7 +180,6 @@ def test_transition_labeled_if_target_is_not_parsable():
     graph = py2graph(src)
     validate_graph(graph)
     trans = grtrans(0, -1, parse_cond(cond), "unknown_label()")
-    trans["error"] = "unparsable_transition_target"
     target = {
         "nodes": [
             grnode_str("node0", "flow0"),
@@ -222,7 +221,7 @@ def test_transition_to_other_flow():
     assert target == graph
 
 
-def test_returns_error_if_condition_invalid():
+def test_skips_invalid_conditions():
     invalid_conds = [
         "12",  # number
         "f'condition'",  # string
@@ -235,7 +234,7 @@ def test_returns_error_if_condition_invalid():
         )
         graph = py2graph(src)
         validate_graph(graph)
-        assert graph["nodes"][0]["error"] == "invalid_condition"
+        assert len(graph["transitions"]) == 0
 
 
 def test_more_complex_plot():
@@ -328,7 +327,7 @@ def test_finds_flow_in_separate_variable_in_same_module():
     assert target == graph
 
 
-def test_returns_error_if_separate_flow_not_found():
+def test_skips_flows_if_not_found():
     src = code_with_vars(
         plot_with_flows(
             "var2",
@@ -337,7 +336,7 @@ def test_returns_error_if_separate_flow_not_found():
     )
     graph = py2graph(src)
     validate_graph(graph)
-    assert graph["error"] == "flow_not_found"
+    assert len(graph["nodes"]) == 1
 
 
 def test_finds_transitions_in_separate_variable_in_same_module():
@@ -365,7 +364,7 @@ def test_finds_transitions_in_separate_variable_in_same_module():
     assert target == graph
 
 
-def test_returns_error_if_transitions_not_found():
+def test_skips_nodes_with_no_valid_transition():
     src = code_with_vars(
         plot_with_flows(
             flow_with_nodes(
@@ -376,7 +375,7 @@ def test_returns_error_if_transitions_not_found():
     )
     graph = py2graph(src)
     validate_graph(graph)
-    assert graph["nodes"][0]["error"] == "invalid_node"
+    assert len(graph["nodes"]) == 1
 
 
 def test_recursively_resolve_references():
