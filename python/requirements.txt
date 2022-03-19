@@ -4,6 +4,7 @@ flake8
 isort
 pytest
 pytest-cov
+jsonschema
 
 # Prod
 libcst

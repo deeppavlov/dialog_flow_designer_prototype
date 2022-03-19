@@ -1,6 +1,4 @@
-from typing import Any, Dict, Optional, Union
-
-import black
+from typing import Dict, Optional, Union
 
 code_header = """
 from dff.core.keywords import TRANSITIONS, RESPONSE, MISC, PROCESSING
@@ -68,34 +66,6 @@ def dslnode(
 
 def code_with_one_flow(*nodes: str):
     return code_with_vars(plot_with_flows(flow_with_nodes(*nodes)))
-
-
-def normalize_formatting(src: str) -> str:
-    return black.format_str(src, mode=black.FileMode(magic_trailing_comma=False))
-
-
-def name_prsd(cont: str):
-    return {"tmpl": "$s", "data": {"s": cont}, "type": "name"}
-
-
-def str_prsd(cont: str, prefix: str = "", quote='"'):
-    return {"tmpl": f"{prefix}{quote}$s{quote}", "data": {"s": cont}, "type": "str"}
-
-
-def tuple_prsd(*elements: Any):
-    return {
-        "tmpl": "(" + ", ".join(f"$s{i}" for i in range(len(elements))) + ")",
-        "data": {f"s{i}": el for i, el in enumerate(elements)},
-        "type": "tuple",
-    }
-
-
-def func_prsd(func: str, *args: Any):
-    return {
-        "tmpl": "$func(" + ", ".join(f"$arg{i}" for i in range(len(args))) + ")",
-        "data": {"func": func, **{f"arg{i}": arg for i, arg in enumerate(args)}},
-        "type": "func",
-    }
 
 
 def grnode_str(lbl: str, flow: str):
