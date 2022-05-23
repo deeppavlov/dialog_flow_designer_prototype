@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { TextDocument, WebviewPanel, CancellationToken } from "vscode";
 import { PythonShell } from "python-shell";
-import { Graph, ViewAction, ViewState } from "./types";
+import { Graph, Plot, ViewAction, ViewState } from "./types";
 
 function getPos(text: string, substring: string): { line: number; col: number } {
   let line = 1,
@@ -50,9 +50,9 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
     const updateWebview = async () => {
-      const graph = await this.py2Graph(document.getText());
+      const plot = await this.py2Graph(document.getText());
       const newState: ViewState = {
-        graph,
+        plot,
       };
       console.log("sending to webview", newState);
       webviewPanel.webview.postMessage(newState);
@@ -74,37 +74,37 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
         case "load":
           updateWebview();
           break;
-        case "add":
-          const newPy = await this.addNode(
-            document.getText(),
-            e.payload.parentId,
-            e.payload.parentFlow
-          );
-          const workspaceEdit = new vscode.WorkspaceEdit();
-          workspaceEdit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), newPy);
-          await vscode.workspace.applyEdit(workspaceEdit);
-          updateWebview();
+        // case "add":
+        //   const newPy = await this.addNode(
+        //     document.getText(),
+        //     e.payload.parentId,
+        //     e.payload.parentFlow
+        //   );
+        //   const workspaceEdit = new vscode.WorkspaceEdit();
+        //   workspaceEdit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), newPy);
+        //   await vscode.workspace.applyEdit(workspaceEdit);
+        //   updateWebview();
 
-          for (const editor of vscode.window.visibleTextEditors) {
-            if (editor.document.uri === document.uri) {
-              vscode.window.showTextDocument(document, {
-                preview: false,
-                viewColumn: editor.viewColumn,
-              });
-              setTimeout(() => {
-                const pos = getPos(newPy, "<Rename new node>");
-                editor.selection = new vscode.Selection(
-                  pos.line - 1,
-                  pos.col - 1,
-                  pos.line - 1,
-                  pos.col + 16
-                );
-                vscode.commands.executeCommand("editor.action.selectHighlights");
-              }, 10);
-            }
-          }
+        //   for (const editor of vscode.window.visibleTextEditors) {
+        //     if (editor.document.uri === document.uri) {
+        //       vscode.window.showTextDocument(document, {
+        //         preview: false,
+        //         viewColumn: editor.viewColumn,
+        //       });
+        //       setTimeout(() => {
+        //         const pos = getPos(newPy, "<Rename new node>");
+        //         editor.selection = new vscode.Selection(
+        //           pos.line - 1,
+        //           pos.col - 1,
+        //           pos.line - 1,
+        //           pos.col + 16
+        //         );
+        //         vscode.commands.executeCommand("editor.action.selectHighlights");
+        //       }, 10);
+        //     }
+        //   }
 
-          break;
+        //   break;
       }
     });
   }
@@ -122,6 +122,9 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     const styleMainUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this.context.extensionUri, "webview", "editor.css")
     );
+    const styleUnoUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "webview", "uno.css")
+    );
 
     return /* html */ `
 			<!DOCTYPE html>
@@ -133,6 +136,7 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
 				<link href="${styleResetUri}" rel="stylesheet" />
 				<link href="${styleVSCodeUri}" rel="stylesheet" />
 				<link href="${styleMainUri}" rel="stylesheet" />
+				<link href="${styleUnoUri}" rel="stylesheet" />
 
 				<title>Graph Editor</title>
 			</head>
@@ -143,13 +147,11 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
 			</html>`;
   }
 
-  private async py2Graph(pythonCode: string): Promise<Graph> {
-    const b64Py = Buffer.from(pythonCode, "utf-8").toString("base64");
-    const result = (await this.runPythonScript("py2json", {
-      pycode: b64Py,
-    })) as { graph: Graph };
-    console.log("got graph from python", result);
-    return result.graph;
+  private async py2Graph(pythonCode: string): Promise<Plot> {
+    // const b64Py = Buffer.from(pythonCode, "utf-8").toString("base64");
+    const result = (await this.runPythonScript("py2graph", pythonCode)) as Plot;
+    console.log("got graph from python", JSON.stringify(result, undefined, 4));
+    return result;
   }
 
   private async addNode(pythonCode: string, parentId: number, parentFlow: string): Promise<string> {
@@ -165,14 +167,14 @@ class GraphEditorProvider implements vscode.CustomTextEditorProvider {
     return code;
   }
 
-  private runPythonScript(script: string, input: object): Promise<object> {
+  private runPythonScript(script: string, input: any): Promise<any> {
     return new Promise((resolve) => {
       const pathToScript = vscode.Uri.file(
         path.join(this.context.extensionPath, `python/${script}.py`)
       ).fsPath;
       console.log("running", pathToScript);
       const shell = new PythonShell(pathToScript, { mode: "text" });
-      shell.send(JSON.stringify(input) + "\n");
+      shell.send((typeof input === "string" ? input : JSON.stringify(input)) + "\n");
       console.log("sending to py", input);
 
       shell.on("message", (msg) => resolve(JSON.parse(msg)));

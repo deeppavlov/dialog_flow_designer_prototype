@@ -14,16 +14,16 @@ import { useGraphElements, useViewState, sendAction } from "./hooks";
 
 function ResponseNode({ id, data }: { id: string; data: any }) {
   const onAdd = () => {
-    sendAction({
-      type: "add",
-      payload: {
-        parentId: data.label,
-        parentFlow: data.flow,
-      },
-    });
+    // sendAction({
+    //   type: "add",
+    //   payload: {
+    //     parentId: data.label,
+    //     parentFlow: data.flow,
+    //   },
+    // });
   };
   return (
-    <NodeCont className="react-flow__node react-flow__node-default selectable">
+    <NodeCont color="blue" className="selectable">
       <Handle type="target" position={Position.Left} style={{ background: "#555" }} />
       {data.label}
       <Handle type="source" position={Position.Right} id="a" style={{ background: "#555" }} />
@@ -34,8 +34,19 @@ function ResponseNode({ id, data }: { id: string; data: any }) {
   );
 }
 
+function ConditionNode({ id, data }: { id: string; data: any }) {
+  return (
+    <NodeCont color="yellow" className="selectable">
+      <Handle type="target" position={Position.Left} style={{ background: "#555" }} />
+      {data.label}
+      <Handle type="source" position={Position.Right} id="a" style={{ background: "#555" }} />
+    </NodeCont>
+  );
+}
+
 const nodeTypes: NodeTypesType = {
   response: ResponseNode,
+  condition: ConditionNode,
 };
 
 function GraphEditor() {
@@ -73,20 +84,18 @@ const iconContClass = css({
   },
 });
 
-const NodeCont = styled("div")({
+const NodeCont = styled("div")<{ color: string }>(({ color }) => ({
   position: "relative",
+  borderRadius: "5px",
+  backgroundColor: "white",
+  padding: "10px 20px",
+  borderTop: "solid 5px " + color,
+  textAlign: "center",
+  boxShadow: "0 0 7px 2px rgba(0.5, 0.5, 0.5, 0.2)",
 
   [`&:hover > .${iconContClass}`]: {
     display: "flex",
   },
-});
-
-const Sidebar = styled("div")({
-  position: "absolute",
-  width: "350px",
-  right: 0,
-  top: 0,
-  bottom: 0,
-});
+}));
 
 export default GraphEditor;

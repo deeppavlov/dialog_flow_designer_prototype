@@ -7,10 +7,11 @@
     "start": "npm run code && npm run watch",
     "test": "npm run py:test",
     "code": "code --extensionDevelopmentPath=${pwd} ./test/test-flows/",
-    "build": "npm run build-ext -- --minify && npm run build-webv -- --minify",
-    "watch": "concurrently \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" --names \"esbuild-main,esbuild-webview\"",
+    "build": "npm run build-ext -- --minify && npm run build-webv -- --minify && npm run build-css",
+    "watch": "concurrently \"npm run build-ext -- --sourcemap --watch\" \"npm run build-webv -- --sourcemap --watch\" \"npm run build-css -- --watch\" --names \"esbuild-main,esbuild-webview,unocss\"",
     "build-ext": "esbuild ./src/extension.ts --bundle --outfile=dist/main.js --external:vscode --format=cjs --platform=node",
     "build-webv": "esbuild ./webview/main.ts --bundle --outfile=webview/main.js",
+    "build-css": "unocss \"webview/**/*.tsx\" --out-file webview/uno.css",
     "tsc": "tsc --noEmit --skipLibCheck -p ./ && tsc --noEmit -p ./webview",
     "lint": "eslint . --ext .ts,.tsx && cd python && venv/bin/python -m flake8 --exclude=venv",
     "format": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\" && cd python && venv/bin/python -m black . && venv/bin/python -m isort .",
@@ -18,8 +19,7 @@
     "py:prepare": "cd python && python -m venv venv && npm run py:install",
     "py:install": "cd python && venv/bin/pip install -r requirements.txt",
     "py:package": "python python/pydeps.py",
-    "py:test": "cd python && venv/bin/python -m pytest",
-    "py:coverage": "cd python && venv/bin/python -m pytest --cov-config=.coveragerc --cov=. tests/"
+    "py:test": "cd python && echo No Python tests for now"
   },
   "engines": {
     "vscode": "^1.47.0"
@@ -56,6 +56,7 @@
     "@types/vscode-webview": "^1.57.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "@unocss/cli": "^0.33.2",
     "concurrently": "^6.4.0",
     "esbuild": "^0.13.13",
     "eslint": "^7.32.0",
@@ -63,7 +64,8 @@
     "lint-staged": "^12.3.1",
     "prettier-eslint": "^13.0.0",
     "prettier-eslint-cli": "^5.0.1",
-    "typescript": "^4.4.4"
+    "typescript": "^4.4.4",
+    "unocss": "^0.33.2"
   },
   "dependencies": {
     "csstype": "^2.6.2",
@@ -82,7 +84,6 @@
     }
   },
   "lint-staged": {
-    "*.{ts,tsx}": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\"",
-    "*.py": "cd python && venv/bin/python -m black . && venv/bin/python -m isort . && venv/bin/python -m flake8 --exclude=venv"
+    "*.{ts,tsx}": "prettier-eslint --write \"{webview,src}/**/*.{ts,tsx}\""
   }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import dagre from "dagre";
 import { Elements, Position, isNode } from "react-flow-renderer";
-import type { ViewState, ViewAction, Graph } from "../src/types";
+import { ViewState, ViewAction, Graph, Plot, NodeType } from "../src/types";
 
 const vscode = acquireVsCodeApi();
 
@@ -29,19 +29,98 @@ export function useViewState(): ViewState | null {
 const nodeWidth = 172;
 const nodeHeight = 36;
 
-const getElements = (graph: Graph): Elements => {
+const edgeId = ([src, trg]: [string, string]) => `e${src}-${trg}`;
+
+const getElements = (plot: Plot): Elements => {
+  const globalEdges = Object.values(plot.nodes)
+    .filter(({ type }) => type === NodeType.GLOBAL)
+    .flatMap((node) => node.transitions ?? [])
+    .map((transId) => [transId, plot.transitions[transId]] as [string, Plot["transitions"][string]])
+    .filter(([_, trans]) => trans.label.startsWith("id#nd"))
+    .map(([id, trans]) => ({
+      id,
+      cond: plot.py_defs[plot.linking[trans.condition]?.object]?.name ?? "unknown",
+      target: trans.label,
+    }));
+
+  const edgeIds = new Set<string>();
+  const edges: [string, string][] = [];
+  const transitions: { id: string; cond: string }[] = [
+    ...globalEdges.map(({ id, cond }) => ({ id, cond })),
+  ];
+  Object.entries(plot.nodes).forEach(([id, node]) => {
+    if (node.type !== NodeType.REGULAR || !node.transitions) return;
+    node.transitions?.forEach((transId) => {
+      const trans = plot.transitions[transId];
+      if (!trans.label.startsWith("id#nd")) return;
+
+      // Find condition
+      let cond = "unknown";
+      const condId = trans.condition;
+      if (condId.startsWith("id#ln")) {
+        const link = plot.linking[condId];
+        const objId = link.object;
+        if (objId.startsWith("id#df")) {
+          const obj = plot.py_defs[objId];
+          cond = obj.name;
+        }
+      }
+
+      // Condition node
+      transitions.push({ id: transId, cond });
+
+      // Edge from node to condition
+      const eid1 = edgeId([id, transId]);
+      if (!edgeIds.has(eid1)) {
+        edgeIds.add(eid1);
+        edges.push([id, transId]);
+      }
+
+      // Edge from condition to target node
+      const eid2 = edgeId([transId, trans.label]);
+      if (!edgeIds.has(eid2)) {
+        edgeIds.add(eid2);
+        edges.push([transId, trans.label]);
+      }
+    });
+
+    globalEdges.forEach(({ id: transId, cond, target }) => {
+      if (target === id) return;
+      // Edge from node to condition
+      const eid1 = edgeId([id, transId]);
+      if (!edgeIds.has(eid1)) {
+        edgeIds.add(eid1);
+        edges.push([id, transId]);
+      }
+      // Edge from condition to target
+      const eid2 = edgeId([transId, target]);
+      if (!edgeIds.has(eid2)) {
+        edgeIds.add(eid2);
+        edges.push([transId, target]);
+      }
+    });
+  });
+
   const elements: Elements = [
-    ...graph.nodes.map((node, idx) => ({
-      id: `${idx}`,
-      data: node.data,
-      type: node.type || "default",
-      // position: { ...node.position }
+    ...transitions.map(({ id, cond }) => ({
+      id,
+      data: { label: cond },
+      type: "condition",
       position: { x: 0, y: 0 },
     })),
-    ...graph.edges.map((edge) => ({
-      id: `e${edge.source}-${edge.target}`,
-      source: `${edge.source}`,
-      target: `${edge.target}`,
+    ...Object.entries(plot.nodes)
+      .filter(([_, node]) => node.type === NodeType.REGULAR)
+      .map(([id, node]) => ({
+        id,
+        data: { label: node.name || "noname" },
+        type: "response",
+        // position: { ...node.position }
+        position: { x: 0, y: 0 },
+      })),
+    ...edges.map(([srcId, trgId]) => ({
+      id: `e${srcId}-${trgId}`,
+      source: `${srcId}`,
+      target: `${trgId}`,
     })),
   ];
 
@@ -86,6 +165,6 @@ const getElements = (graph: Graph): Elements => {
 };
 
 export function useGraphElements(state: ViewState | null): Elements {
-  const elements = useMemo(() => (state ? getElements(state.graph) : []), [state?.graph]);
+  const elements = useMemo(() => (state ? getElements(state.plot) : []), [state?.plot]);
   return elements;
 }

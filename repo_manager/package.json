@@ -1,0 +1,12 @@
+{
+  "name": "repo_manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install": "echo Error! && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
