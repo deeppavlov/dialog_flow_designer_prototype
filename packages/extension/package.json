@@ -1,0 +1,50 @@
+{
+  "name": "@dialog-flow-designer/extension",
+  "version": "1.0.0",
+  "description": "Dialog Flow Designer VSCode extension",
+  "scripts": {
+    "clean": "rimraf dist",
+    "start": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "vscode:prepublish": "npm run build"
+  },
+  "engines": {
+    "vscode": "^1.47.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "*",
+    "onCustomEditor:deeppavlov.df-designer-graph"
+  ],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "deeppavlov.df-designer-graph",
+        "displayName": "Dialog Flow Designer",
+        "selector": [
+          {
+            "filenamePattern": "*.py"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "dependencies": {
+    "@dialog-flow-designer/types": "link:../types",
+    "@hediet/node-reload": "^0.7.3",
+    "@hediet/std": "^0.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.35",
+    "@types/vscode": "^1.67.0",
+    "esbuild": "^0.14.39",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.6.4"
+  }
+}
