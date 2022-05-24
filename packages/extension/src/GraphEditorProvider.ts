@@ -46,13 +46,17 @@ export default class GraphEditorProvider implements vscode.CustomTextEditorProvi
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
-    // const scriptUri = webview.asWebviewUri(
-    //   vscode.Uri.joinPath(this.context.extensionUri, "webview", "main.js")
-    // );
+    const isProd = process.env.NODE_ENV !== "development";
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "webview", "main.js")
+    );
 
     return /* html */ `
     <html lang="en">
       <head>
+${
+  isProd
+    ? `
         <base href="http://localhost:3000" />
         <script type="module" src="/@vite/client"></script>
         <script type="module">
@@ -61,16 +65,17 @@ RefreshRuntime.injectIntoGlobalHook(window)
 window.$RefreshReg$ = () => {}
 window.$RefreshSig$ = () => (type) => type
 window.__vite_plugin_react_preamble_installed__ = true
-        </script>
+        </script>`
+    : ""
+}
 
       <meta charset="UTF-8" />
-      <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Vite App</title>
+      <title>Dialog Flow Editor</title>
     </head>
     <body>
       <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
+      <script type="module" src="${isProd ? "/src/main.tsx" : scriptUri}"></script>
     </body>
   </html>`;
   }

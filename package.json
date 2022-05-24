@@ -2,7 +2,9 @@
   "name": "dialog-flow-designer",
   "version": "0.0.1",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "preinstall": "node scripts/install.mjs"
+  },
   "devDependencies": {},
   "dependencies": {}
 }

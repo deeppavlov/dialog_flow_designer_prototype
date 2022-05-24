@@ -1,0 +1,13 @@
+{
+  "name": "@dialog-flow-designer/df-parser-server",
+  "version": "1.0.0",
+  "description": "Python wrapper around DF Parser",
+  "scripts": {
+    "postinstall": "vpip install -r requirements.txt"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@dialog-flow-designer/utils": "link:../utils",
+    "nodemon": "^2.0.16"
+  }
+}

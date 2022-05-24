@@ -1,5 +1,5 @@
 {
-  "name": "@dialog-flow-designer/extension",
+  "name": "@dialog-flow-designer/editor",
   "version": "1.0.0",
   "scripts": {
     "dev:vsc": "cross-env VSC=1 vite",

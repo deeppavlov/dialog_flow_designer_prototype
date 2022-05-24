@@ -1,9 +1,7 @@
 node_modules
 dist
 *.map
-webview/*.js
-webview/uno.css
 venv
-python/deps.zip
 __pycache__
 .coverage
+.pnpm-debug.log

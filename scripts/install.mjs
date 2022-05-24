@@ -1,5 +1,4 @@
-import { delimiter, join } from "path";
-import { existsSync, readFileSync } from "fs";
+import { existsSync } from "fs";
 import { exec as execCb } from "child_process";
 import { promisify } from "util";
 import { ensurePNPM, ensureRoot } from "./utils.mjs";
@@ -48,6 +47,7 @@ await ensurePNPM();
 
 // Setup python venv
 if (!existsSync("venv")) {
+  console.log("Creating venv");
   try {
     await exec("python -m venv venv");
   } catch (e) {
@@ -55,4 +55,4 @@ if (!existsSync("venv")) {
   }
 }
 
-// Install python dependencies
+console.log("Environment ok");
