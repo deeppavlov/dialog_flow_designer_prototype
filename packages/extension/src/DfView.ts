@@ -31,11 +31,13 @@ export default class DfView implements vscode.Disposable {
    */
   private getHtmlForWebview = (): string => {
     const devServer = process.env.VITE_SERVER;
-    const useDevServer = devServer && process.env.NODE_ENV !== "development";
+    const useDevServer = devServer && process.env.NODE_ENV === "development";
     // TODO: figure out production bundle
-    const scriptUri = this.panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "webview", "main.js")
-    );
+    const scriptUri = useDevServer
+      ? ""
+      : this.panel.webview.asWebviewUri(
+          vscode.Uri.joinPath(this.context.extensionUri, "webview", "main.js")
+        );
 
     return /* html */ `
     <html lang="en">
