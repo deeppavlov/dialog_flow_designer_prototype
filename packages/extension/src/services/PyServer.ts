@@ -1,11 +1,12 @@
 import path = require("path");
 import * as vscode from "vscode";
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { PythonShell } from "python-shell";
 import type {
   MessageAndReply,
   PlotReply,
   SrcReply,
 } from "@dialog-flow-designer/shared-types/df-parser-server";
+import { findVenv } from "@dialog-flow-designer/utils";
 import { nanoid } from "nanoid";
 
 type ReplyCb = (reply: MessageAndReply[1]["payload"]) => void;
@@ -14,13 +15,15 @@ export default class PyServer {
   name = "pyserver";
 
   // Definetely gets intialized in constructor
-  private pyProc!: ChildProcessWithoutNullStreams;
+  pyProc!: PythonShell;
   private replyCallbacks: Record<string, ReplyCb> = {};
-  private currentChunk = "";
   private disposed = false;
 
-  constructor(context: vscode.ExtensionContext) {
+  constructor() {
     this.ensureServerRunning();
+    // In practice, dispose does not always get called, so it's best to make sure
+    // in this case, so we don't leave any zombie processes behind.
+    process.on("exit", () => this.dispose());
   }
 
   public parseSrc = async (pythonSrc: string) =>
@@ -45,18 +48,26 @@ export default class PyServer {
     if (this.pyProc && this.pyProc.exitCode === null) return;
     if (process.env.NODE_ENV === "development") {
       console.info("Starting Python process in development mode");
-      // Special dev script
-      this.pyProc = spawn("node", ["dev.js"], { cwd: path.resolve("..", "df-parser-server") });
+      // For some reason cwd is messed up when running in development
+      // __dirname == extension/dist
+      const venvPath = findVenv();
+      const serverPkgPath = path.resolve(venvPath, "..", "packages", "df-parser-server");
+      this.pyProc = new PythonShell("server.py", {
+        cwd: serverPkgPath,
+        pythonPath: path.join(venvPath, "bin", "python"),
+        // Yes, there's a json mode, but it does not seem to work
+        // Just stick to text mode
+      });
     } else {
       console.info("Starting Python process");
-      const pyPath = path.join(".", "venv", "bin", "python");
-      this.pyProc = spawn(pyPath, ["-m", "df_parser_server"]);
+      this.pyProc = new PythonShell("server.py", {
+        pythonPath: path.join("venv", "bin", "python"),
+        // Yes, there's a json mode, but it does not seem to work
+        // Just stick to text mode
+      });
     }
-    this.pyProc.stdout.on("data", (chunk) => {
-      console.log("chunk", typeof chunk, "\n", chunk);
-      this.receiveData(chunk);
-    });
-    this.pyProc.on("close", (code) => {
+    this.pyProc.on("message", this.receiveReply);
+    this.pyProc.on("close", (code: number) => {
       console.error(`Python process exited with code ${code}`);
     });
   };
@@ -67,25 +78,23 @@ export default class PyServer {
     new Promise((resolve) => {
       const id = nanoid();
       this.replyCallbacks[id] = resolve;
-      this.pyProc.stdin.write(JSON.stringify(message));
+      console.log("Send message to py\n", message);
+      this.pyProc.send(JSON.stringify(<T[0]>{ ...message, id }));
     });
 
-  private receiveData = (chunk: string) => {
-    this.currentChunk += chunk;
-    const parts = this.currentChunk.split("\n");
-    this.currentChunk = parts[parts.length - 1];
-    parts.slice(0, -1).forEach((line) => {
-      // Received a reply
-      const { msgId, payload } = JSON.parse(line) as MessageAndReply[1];
-      if (msgId in this.replyCallbacks) {
-        this.replyCallbacks[msgId](payload);
-        delete this.replyCallbacks[msgId];
-      } else console.error(`Reply callback for ${msgId} was not found!`);
-    });
+  private receiveReply = (replyStr: string) => {
+    console.log("Data from Python\n", replyStr);
+    const { msgId, payload } = JSON.parse(replyStr) as MessageAndReply[1];
+    if (msgId in this.replyCallbacks) {
+      this.replyCallbacks[msgId](payload);
+      delete this.replyCallbacks[msgId];
+    } else console.error(`Reply callback for ${msgId} was not found!`);
   };
 
   dispose() {
     if (this.disposed || this.pyProc.exitCode !== null) return;
+    console.info("killing python process");
+    this.pyProc.end(() => {});
     this.pyProc.kill();
     this.disposed = true;
   }

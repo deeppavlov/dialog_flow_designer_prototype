@@ -10,9 +10,9 @@ class Extension {
   pyServer: PyServer;
 
   constructor(private readonly context: vscode.ExtensionContext) {
-    this.pyServer = new PyServer(context);
+    this.pyServer = new PyServer();
     this.editorProvider = new DfEditorProvider(context, this.pyServer);
-    this.context.subscriptions.push(this.pyServer, this.editorProvider)
+    this.context.subscriptions.push(this.pyServer, this.editorProvider);
   }
 
   /**
