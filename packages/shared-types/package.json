@@ -1,0 +1,8 @@
+{
+  "name": "@dialog-flow-designer/shared-types",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Dialog Flow Designer common types",
+  "main": "index.ts",
+  "license": "MIT"
+}
