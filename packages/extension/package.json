@@ -38,10 +38,12 @@
   "dependencies": {
     "@hediet/node-reload": "^0.7.3",
     "@hediet/std": "^0.6.0",
-    "nanoid": "^3.3.4"
+    "nanoid": "^3.3.4",
+    "python-shell": "^3.0.1"
   },
   "devDependencies": {
     "@dialog-flow-designer/shared-types": "link:../shared-types",
+    "@dialog-flow-designer/utils": "link:../utils",
     "@types/node": "^17.0.35",
     "@types/vscode": "^1.67.0",
     "esbuild": "^0.14.39",

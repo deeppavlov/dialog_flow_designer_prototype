@@ -2,6 +2,7 @@
   "name": "@dialog-flow-designer/utils",
   "version": "1.0.0",
   "description": "Utility scripts for packages",
+  "main": "index.js",
   "bin": {
     "vpip": "./vpip.js",
     "vpy": "./vpy.js"

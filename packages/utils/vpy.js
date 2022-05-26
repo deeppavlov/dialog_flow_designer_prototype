@@ -4,5 +4,4 @@ const findVenv = require("./findVenv");
 
 const venv = findVenv();
 const args = process.argv.slice(2);
-console.log("Using venv", venv);
-spawnSync(path.join(findVenv(), "bin", "python"), args, { stdio: "inherit" });
+spawnSync(path.join(venv, "bin", "python"), args, { stdio: "inherit" });

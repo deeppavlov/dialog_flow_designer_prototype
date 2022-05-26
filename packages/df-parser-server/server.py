@@ -1,5 +1,8 @@
-from sys import stdin
+import json
 
 while True:
-    line = stdin.readline()
-    print(line)
+    try:
+        msg = json.loads(input())
+    except EOFError:
+        break
+    print(json.dumps({"msgId": msg["id"]}))
