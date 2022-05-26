@@ -2,7 +2,7 @@ import { build as esbuild } from "esbuild";
 import { BuildOptions } from "./options.mjs";
 import isReachable from "is-reachable";
 
-const isDevServerRunning = await isReachable("http://localhost:3000");
+const isDevServerRunning = true;
 
 if (!isDevServerRunning) {
   console.log("Editor dev server is not running!", "Loading extension without it.");
