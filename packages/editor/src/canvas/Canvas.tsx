@@ -14,13 +14,10 @@ const Canvas: FC<{
   const cols = useLayout(graph);
 
   return (
-    <div className="h-full flex-1 flex">
+    <div className="h-full flex-1 flex bg-neutral-200">
       {/* <div className="h-0 flex-1"></div> */}
       {cols.map((nodes, idx) => (
-        <div
-          key={idx}
-          className="w-70 overflow-y-auto flex flex-col justify-center"
-        >
+        <div key={idx} className="w-70 overflow-y-auto flex flex-col justify-center">
           {nodes.map((node, idx) => (
             <Node
               key={idx}

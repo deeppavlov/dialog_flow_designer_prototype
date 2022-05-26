@@ -1,12 +1,7 @@
+import cn from "classnames";
 import { FC } from "react";
-import { css } from "@linaria/core";
 import { GNode, Turn } from "../types";
-
-const hoverShow = css`
-  &:hover > div:last-child {
-    display: flex;
-  }
-`;
+import IconAddFilled from "~icons/carbon/add-filled";
 
 const Node: FC<{
   node: GNode;
@@ -17,18 +12,14 @@ const Node: FC<{
   return (
     <div
       onClick={onClick}
-      className={
-        hoverShow +
-        " relative m-15 border-rounded bg-white p-5 b-t-5 text-center " +
-        (turn === Turn.USER ? "b-t-yellow" : "b-t-red")
-      }
+      className={cn(
+        "relative m-15 rounded bg-white p-5 border-t-5 text-center text-black group",
+        turn === Turn.BOT ? "border-red-500" : "border-yellow-500"
+      )}
     >
       {label}
-      <div className="absolute h-full w-10 left-full top-0 items-center justify-center display-none hover:flex">
-        <i
-          className="i-carbon:add-filled text-7 text-green bg-white"
-          onClick={onClickAdd}
-        />
+      <div className="hidden h-full left-full top-0 w-10 absolute items-center justify-center display-none group-hover:flex hover:flex cursor-pointer">
+        <IconAddFilled fill="white" fontSize="20" color="#10b981" onClick={onClickAdd} />
       </div>
     </div>
   );

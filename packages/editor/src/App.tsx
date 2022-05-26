@@ -7,9 +7,7 @@ import { Mode, GNode, Turn } from "./types";
 function App() {
   const { graph, addNode } = useGraph({
     edges: [],
-    nodes: [
-      { id: "start", label: "Start Node", properties: [], turn: Turn.BOT },
-    ],
+    nodes: [{ id: "start", label: "Start Node", properties: [], turn: Turn.BOT }],
   });
   const [selectedNode, setSelectedNode] = useState<GNode>();
   const [mode, setMode] = useState<Mode>(Mode.DEFAULT);
@@ -20,8 +18,8 @@ function App() {
   // );
 
   return (
-    <div className="h-full flex flex-col bg-#dadbde ">
-      <div className="w-70 ml-a p-2 p-t-5 p-b-5">
+    <div className="h-full flex flex-col">
+      {/* <div className="w-70 ml-a p-2 p-t-5 p-b-5">
         {selectedNode && mode === Mode.ADD && (
           <Autocomplete
             previousProps={selectedNode.properties}
@@ -29,16 +27,14 @@ function App() {
             onEnter={(newNode) => addNode(newNode, selectedNode.id)}
           />
         )}
-      </div>
+      </div> */}
 
       <Canvas
         graph={graph}
         mode={mode}
         selectedNodeId={selectedNode?.id}
         onChangeMode={setMode}
-        onSelectNode={(selId) =>
-          setSelectedNode(graph.nodes.find(({ id }) => id === selId))
-        }
+        onSelectNode={(selId) => setSelectedNode(graph.nodes.find(({ id }) => id === selId))}
       />
     </div>
   );
