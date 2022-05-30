@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Python wrapper around DF Parser",
   "scripts": {
-    "postinstall": "vpip install -r requirements.txt"
+    "postinstall": "vpip install -r requirements.txt",
+    "lint": "vpy flake8"
   },
   "license": "MIT",
   "dependencies": {
