@@ -13,10 +13,27 @@ export interface EditorState {
 // Actions are sent from the UI to the backend
 
 /**
- * Load the latest plot. Called on first load.
+ * Indicate that the newly opened view is ready to get the state
  */
-interface LoadAction {
-  name: "load";
+interface ReadyAction {
+  name: "ready";
+}
+
+/**
+ * Drop an unconnected node on the canvas
+ */
+interface DropNodeAction {
+  name: "drop_node";
+}
+
+/**
+ * Add a new transition (condition) to the plot
+ */
+interface AddTransAction {
+  name: "add_trans";
+  payload: {
+    sourceNodeId: string;
+  };
 }
 
 /**
@@ -25,8 +42,36 @@ interface LoadAction {
 interface AddNodeAction {
   name: "add_node";
   payload: {
-    parentNodeId: string;
+    sourceTransId: string;
   };
 }
 
-export type EditorAction = LoadAction | AddNodeAction;
+/**
+ * Connect an existing transition to another node, or vica versa
+ */
+interface ConnectTransToNodeAction {
+  name: "connect_trans_to_node";
+  payload: {
+    sourceId: string;
+    targetId: string;
+  };
+}
+
+/**
+ * Connect two existing nodes and create a transition in-between.
+ */
+interface ConnectNodeToNodeAction {
+  name: "connect_node_to_node";
+  payload: {
+    sourceId: string;
+    targetId: string;
+  };
+}
+
+export type EditorAction =
+  | ReadyAction
+  | DropNodeAction
+  | AddTransAction
+  | AddNodeAction
+  | ConnectTransToNodeAction
+  | ConnectNodeToNodeAction;

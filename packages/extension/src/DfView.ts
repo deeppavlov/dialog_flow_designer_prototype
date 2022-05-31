@@ -2,12 +2,24 @@ import type { EditorAction, EditorState } from "@dialog-flow-designer/shared-typ
 import * as vscode from "vscode";
 
 /**
+ * Discriminated union of actions not handled by `DfView`
+ */
+// If an action is added that is handled by DfView, change this line to
+// Exclude<EditorAction, {union of handled actions}>
+// see https://www.typescriptlang.org/docs/handbook/utility-types.html#excludeuniontype-excludedmembers
+export type DocumentAction = EditorAction;
+
+type ActionSub = (action: DocumentAction) => void;
+
+/**
  * Holds onto an open webview panel and communicates with the editor in it.
  *
  * When initializing, it sets up the webview, resetting it completely, therefore
  * should only be constructed once with each panel.
  */
 export default class DfView implements vscode.Disposable {
+  private actionSubs = new Set<ActionSub>();
+
   constructor(readonly context: vscode.ExtensionContext, readonly panel: vscode.WebviewPanel) {
     panel.webview.options = {
       enableScripts: true,
@@ -20,7 +32,20 @@ export default class DfView implements vscode.Disposable {
 
   public onDidPanelDispose = this.panel.onDidDispose;
 
-  private handleAction = (action: EditorAction) => {};
+  public onEditorAction = (cb: ActionSub) => {
+    this.actionSubs.add(cb);
+    return <vscode.Disposable>{
+      dispose: () => this.actionSubs.delete(cb)
+    }
+  };
+
+  private handleAction = (action: EditorAction) => {
+    switch (action.name) {
+      // Handle view related actions here
+      default:
+        this.actionSubs.forEach((sub) => sub(action));
+    }
+  };
 
   /**
    * Populate the webview with html, scripts, and styles required for the editor.

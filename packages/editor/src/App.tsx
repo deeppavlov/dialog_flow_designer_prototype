@@ -5,10 +5,7 @@ import useGraph from "./canvas/useGraph";
 import { Mode, GNode, Turn } from "./types";
 
 function App() {
-  const { graph, addNode } = useGraph({
-    edges: [],
-    nodes: [{ id: "start", label: "Start Node", properties: [], turn: Turn.BOT }],
-  });
+  const { graph, addNode } = useGraph();
   const [selectedNode, setSelectedNode] = useState<GNode>();
   const [mode, setMode] = useState<Mode>(Mode.DEFAULT);
 

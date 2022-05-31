@@ -3,6 +3,7 @@ import { Disposable } from "@hediet/std/disposable";
 import type DfView from "./DfView";
 import type PyServer from "./services/PyServer";
 import type { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
+import type { DocumentAction } from "./DfView";
 
 /**
  * Holds onto the `TextDocument` containing the Python source for the DFF plot,
@@ -34,9 +35,25 @@ export default class DfDocument implements vscode.Disposable {
 
   addView = async (view: DfView) => {
     this.views.push(view);
-    // Because opening second/third views is quite rare, we do not cache this value
-    const { plot } = await this.getPlot();
-    view.pushEditorState({ plot });
+    this.dispose.track(view.onEditorAction((action) => this.handleEditorAction(view, action)));
+  };
+
+  /**
+   * This method handles actions from the webview which are related to the document -
+   * eg. changin/adding objects - as opposed to action on the view.
+   */
+  private handleEditorAction = async (view: DfView, action: DocumentAction) => {
+    switch (action.name) {
+      /**
+       * View ready to accept first update
+       */
+      case "ready": {
+        // Because opening second/third views is quite rare, we do not cache this value
+        const { plot } = await this.getPlot();
+        view.pushEditorState({ plot });
+        break;
+      }
+    }
   };
 
   private getPlot = () =>
