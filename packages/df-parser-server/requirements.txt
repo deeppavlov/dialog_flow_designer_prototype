@@ -1,4 +1,5 @@
-black
+# Requirements for development
+ufmt
 flake8
 
 libcst
