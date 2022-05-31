@@ -39,7 +39,8 @@ export default class DfDocument implements vscode.Disposable {
     view.pushEditorState({ plot });
   };
 
-  private getPlot = () => this.pyServer.parseSrc(this.document.getText());
+  private getPlot = () =>
+    this.pyServer.parseSrc(this.document.uri.toString(), this.document.getText());
 
   private handleSourceChange = async () => {
     const { plot } = await this.getPlot();
