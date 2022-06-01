@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { Graph, Mode } from "../types";
-
-import Node from "./Node";
+import FloatingNode from "./FloatingNode";
 import useLayout from "./useLayout";
 
 const Canvas: FC<{
@@ -11,23 +10,20 @@ const Canvas: FC<{
   onSelectNode: (id: string) => void;
   onChangeMode: (mode: Mode) => void;
 }> = ({ graph, mode, selectedNodeId, onChangeMode, onSelectNode }) => {
-  const cols = useLayout(graph);
+  const nodePositions = useLayout(graph);
 
   return (
-    <div className="h-full flex-1 flex bg-neutral-200">
-      {/* <div className="h-0 flex-1"></div> */}
-      {cols.map((nodes, idx) => (
-        <div key={idx} className="w-70 overflow-y-auto flex flex-col justify-center">
-          {nodes.map((node, idx) => (
-            <Node
-              key={idx}
-              node={node}
-              selected={node.id === selectedNodeId}
-              onClick={() => onSelectNode(node.id)}
-              onClickAdd={() => onChangeMode(Mode.ADD)}
-            />
-          ))}
-        </div>
+    <div className="h-full bg-neutral-200 w-full">
+      {graph.nodes.map((node) => (
+        <FloatingNode
+          key={node.id}
+          x={nodePositions.get(node.id)![0]}
+          y={nodePositions.get(node.id)![1]}
+          node={node}
+          selected={node.id === selectedNodeId}
+          onClick={() => onSelectNode(node.id)}
+          onClickAdd={() => onChangeMode(Mode.ADD)}
+        />
       ))}
     </div>
   );
