@@ -1,9 +1,10 @@
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import useSize from "@react-hook/size";
 import { Graph, Mode } from "../types";
 import FloatingNode from "./FloatingNode";
-import useLayout from "./useLayout";
+import useLayout, { nodeHeight, nodeWidth } from "./useLayout";
 import Edge from "./Edge";
+import cn from "classnames";
 
 const zoomSpeed = 0.99;
 const maxZoom = 1;
@@ -19,8 +20,21 @@ const Canvas: FC<{
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const nodePositions = useLayout(graph);
+  const [jumping, setJumping] = useState(false);
   const [pan, setPan] = useState([0, 0]);
   const [zoom, setZoom] = useState(1);
+
+  useEffect(() => {
+    if (!selectedNodeId || !canvasRef.current) return;
+    const selectedPos = nodePositions.get(selectedNodeId)!;
+    const selectedCenterX = pan[0] + selectedPos[0] + nodeWidth / 2;
+    const selectedCenterY = pan[1] + selectedPos[1] + nodeHeight / 2;
+    const { width, height } = canvasRef.current.getBoundingClientRect();
+    const dx = width / 2 - selectedCenterX;
+    const dY = height / 2 - selectedCenterY;
+    setJumping(true);
+    setPan(([x, y]) => [x + dx, y + dY]);
+  }, [selectedNodeId]);
 
   const handlePointerMove: React.PointerEventHandler = (ev) => {
     if (ev.buttons !== 1) return;
@@ -62,7 +76,8 @@ const Canvas: FC<{
     >
       <div
         ref={viewportRef}
-        className="h-full w-full"
+        className={cn("h-full w-full", jumping && "transition-transform")}
+        onTransitionEnd={() => setJumping(false)}
         style={{
           transform: `translate(${pan[0]}px, ${pan[1]}px) scale(${zoom})`,
         }}

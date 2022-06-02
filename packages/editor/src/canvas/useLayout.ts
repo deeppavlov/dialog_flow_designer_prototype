@@ -1,8 +1,8 @@
 import { Children, useMemo } from "react";
 import { Graph, GNode } from "../types";
 
-const nodeWidth = 160;
-const nodeHeight = 69;
+export const nodeWidth = 160;
+export const nodeHeight = 69;
 const columnGap = 100;
 const rowGap = 40;
 
@@ -14,6 +14,7 @@ const useLayout = (graph: Graph) => {
      * Final result
      */
     const positions = new Map<string, [number, number]>();
+    const visitedNodes = new Set<string>();
 
     /**
      * Map of node IDs to list of their children IDs
@@ -43,7 +44,8 @@ const useLayout = (graph: Graph) => {
      */
     const computePosition = (id: string, nodeAboveY: number, depth = 0): number => {
       // If this node has already placed, act like it's not even there
-      if (positions.has(id)) return 0;
+      if (visitedNodes.has(id)) return 0;
+      visitedNodes.add(id);
       const children = edgeMap.get(id) ?? [];
       const childrenHeight = getChildrenHeight(children, nodeAboveY, depth + 1);
       const x = depth * (nodeWidth + columnGap);
