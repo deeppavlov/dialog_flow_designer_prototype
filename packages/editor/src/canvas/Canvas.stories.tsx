@@ -64,7 +64,6 @@ ThreeLevelTree.args = {
       { id: "4", label: "Node 3", turn: Turn.BOT, properties: [] },
       { id: "5", label: "Node 4", turn: Turn.BOT, properties: [] },
       { id: "6", label: "Node 5", turn: Turn.BOT, properties: [] },
-      { id: "7", label: "Node 6", turn: Turn.BOT, properties: [] },
     ],
     edges: [
       { fromId: "1", toId: "2" },
@@ -72,7 +71,6 @@ ThreeLevelTree.args = {
       { fromId: "2", toId: "4" },
       { fromId: "2", toId: "5" },
       { fromId: "3", toId: "6" },
-      { fromId: "3", toId: "7" },
     ],
   },
 };

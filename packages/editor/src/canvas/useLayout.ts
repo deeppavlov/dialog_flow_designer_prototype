@@ -1,10 +1,10 @@
 import { Children, useMemo } from "react";
 import { Graph, GNode } from "../types";
 
-const nodeWidth = 140;
-const nodeHeight = 49;
-const columnGap = 60;
-const rowGap = 60;
+const nodeWidth = 160;
+const nodeHeight = 69;
+const columnGap = 100;
+const rowGap = 40;
 
 const useLayout = (graph: Graph) => {
   const positions = useMemo(() => {
@@ -25,7 +25,8 @@ const useLayout = (graph: Graph) => {
     });
 
     /**
-     * Call `computePostion` on each child and sum up their height
+     * Call `computePostion` on each child and sum up their height, excluding the row
+     * gap of the last child
      */
     const getChildrenHeight = (children: string[], nodeAboveY: number, depth = 0) =>
       Math.max(
