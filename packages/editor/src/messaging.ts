@@ -1,6 +1,8 @@
 import type { EditorAction, EditorState } from "@dialog-flow-designer/shared-types/editor";
+import { useEffect } from "react";
 
-export type MsgSub = (msg: { data: EditorState }) => void;
+export type EditorMessage = Partial<EditorState>;
+export type MsgSub = (msg: { data: EditorMessage }) => void;
 
 let _postMessage: (msg: any) => void;
 let _addMsgSub: (sub: MsgSub) => void;
@@ -14,18 +16,17 @@ if ("acquireVsCodeApi" in window) {
 }
 
 /**
- * Posts a message to the backend, be it VS Code or a web server.
+ * Post a message to the backend.
  */
-export function postMessage(msg: EditorAction) {
-  _postMessage(msg);
-}
+export const sendMessage = (action: EditorAction) => _postMessage(action);
 
 /**
- * Subscribe to messages from the backend.
+ * Subscribe the component to messages from the backend, regardless as to whether that is
+ * VSCode or someting else.
  */
-export const addMessageListener = (sub: MsgSub) => _addMsgSub(sub);
-
-/**
- * Unsubscribe from messages from the backend.
- */
-export const removeMessageListener = (sub: MsgSub) => _removeMsgSub(sub);
+export const useMessages = (handler: MsgSub) => {
+  useEffect(() => {
+    _addMsgSub(handler);
+    return () => _removeMsgSub(handler);
+  }, [handler]);
+};

@@ -1,21 +1,19 @@
-import { nanoid } from "nanoid";
-import { useEffect, useState } from "react";
-import { Graph, GNode, NewNode, Turn, GEdge } from "../types";
-import { postMessage, addMessageListener, removeMessageListener, MsgSub } from "../messaging";
+import { Graph, GNode, Turn, GEdge } from "../types";
 import { NodeType, Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
 
-const plotToGraph = (plot: Plot): Graph => {
+export const plotToGraph = (plot: Plot): Graph => {
   const edgeId = ([src, trg]: [string, string]) => `e${src}-${trg}`;
-  const globalEdges = Object.values(plot.nodes)
-    .filter(({ type }) => type === NodeType.GLOBAL)
-    .flatMap((node) => node.transitions ?? [])
-    .map((transId) => [transId, plot.transitions[transId]] as [string, Plot["transitions"][string]])
-    .filter(([_, trans]) => trans.label.startsWith("id#nd"))
-    .map(([id, trans]) => ({
-      id,
-      cond: plot.py_defs[plot.linking[trans.condition]?.object]?.name ?? "unknown",
-      target: trans.label,
-    }));
+  const globalEdges: any[] = [];
+  // Object.values(plot.nodes)
+  //   .filter(({ type }) => type === NodeType.GLOBAL)
+  //   .flatMap((node) => node.transitions ?? [])
+  //   .map((transId) => [transId, plot.transitions[transId]] as [string, Plot["transitions"][string]])
+  //   .filter(([_, trans]) => trans.label.startsWith("id#nd"))
+  //   .map(([id, trans]) => ({
+  //     id,
+  //     cond: plot.py_defs[plot.linking[trans.condition]?.object]?.name ?? "unknown",
+  //     target: trans.label,
+  //   }));
 
   const edgeIds = new Set<string>();
   const edges: [string, string][] = [];
@@ -108,30 +106,3 @@ const plotToGraph = (plot: Plot): Graph => {
     ),
   };
 };
-
-const useGraph = (intialGraph: Graph = { nodes: [], edges: [] }) => {
-  const [graph, setGraph] = useState<Graph>(intialGraph);
-
-  useEffect(() => {
-    const handler: MsgSub = ({ data }) => {
-      console.log("got plot from ext\n", JSON.stringify(data.plot, undefined, 4));
-      setGraph(plotToGraph(data.plot));
-    };
-    addMessageListener(handler);
-    postMessage({ name: "ready" });
-    return () => removeMessageListener(handler);
-  }, []);
-
-  const addNode = (node: NewNode, fromId: string) => {
-    // const id = nanoid();
-    // const newNode: GNode = { id, ...node };
-    // setGraph(({ edges, nodes }) => ({
-    //   edges: [...edges, { fromId, toId: id }],
-    //   nodes: [...nodes, newNode],
-    // }));
-  };
-
-  return { graph, addNode };
-};
-
-export default useGraph;

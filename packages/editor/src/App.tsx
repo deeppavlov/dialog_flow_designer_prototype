@@ -1,22 +1,13 @@
-import { useState } from "react";
-import Autocomplete from "./autocomp/Autocomplete";
 import Canvas from "./canvas/Canvas";
-import useGraph from "./canvas/useGraph";
-import { Mode, GNode, Turn } from "./types";
+import { useEditorMessages } from "./store";
 
 function App() {
-  const { graph, addNode } = useGraph();
-  const [selectedNode, setSelectedNode] = useState<GNode>();
-  const [mode, setMode] = useState<Mode>(Mode.DEFAULT);
-
-  // const nextCol = () => (
-  //   currentCol >= cols.length - 1 && setCols((c) => [...c, []]),
-  //   setCurrentCol((c) => c + 1)
-  // );
+  // Connect store to backend
+  useEditorMessages();
 
   return (
-    <div className="h-full flex flex-col">
-      {/* <div className="w-70 ml-a p-2 p-t-5 p-b-5">
+    <div className="flex flex-col h-full">
+      {/* <div className="ml-a p-2 p-t-5 p-b-5 w-70">
         {selectedNode && mode === Mode.ADD && (
           <Autocomplete
             previousProps={selectedNode.properties}
@@ -26,13 +17,7 @@ function App() {
         )}
       </div> */}
 
-      <Canvas
-        graph={graph}
-        mode={mode}
-        selectedNodeId={selectedNode?.id}
-        onChangeMode={setMode}
-        onSelectNode={(selId) => setSelectedNode(graph.nodes.find(({ id }) => id === selId))}
-      />
+      <Canvas />
     </div>
   );
 }

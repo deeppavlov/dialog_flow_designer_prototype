@@ -1,16 +1,14 @@
 import { FC } from "react";
-import { nodeHeight, nodeWidth } from "./useLayout";
+import { XY } from "../types";
+import { nodeHeight, nodeWidth } from "./Node";
 
 const c = 30;
 
-const Edge: FC<{ fromNodePos: [number, number]; toNodePos: [number, number] }> = ({
-  fromNodePos,
-  toNodePos,
-}) => {
-  const fromX = fromNodePos[0] + nodeWidth;
-  const fromY = fromNodePos[1] + nodeHeight / 2;
-  const toX = toNodePos[0];
-  const toY = toNodePos[1] + nodeHeight / 2;
+const Edge: FC<{ fromNodePos: XY; toNodePos: XY }> = ({ fromNodePos, toNodePos }) => {
+  const fromX = fromNodePos.x + nodeWidth;
+  const fromY = fromNodePos.y + nodeHeight / 2;
+  const toX = toNodePos.x;
+  const toY = toNodePos.y + nodeHeight / 2;
 
   const backlink = fromX > toX;
   const curve = backlink
@@ -24,7 +22,9 @@ const Edge: FC<{ fromNodePos: [number, number]; toNodePos: [number, number] }> =
         stroke: "grey",
         strokeWidth: "1",
         shapeRendering: "geometricPrecision",
+        pointerEvents: "stroke",
       }}
+      className="hover:(!stroke-green-400 !stroke-2) "
       d={`M ${fromX} ${fromY} ${curve}`}
     ></path>
   );

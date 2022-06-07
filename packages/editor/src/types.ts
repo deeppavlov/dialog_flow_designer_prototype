@@ -1,5 +1,10 @@
 // Private types of the editor
 
+export interface XY {
+  x: number;
+  y: number;
+}
+
 export interface Property {
   type: string;
   value: string;

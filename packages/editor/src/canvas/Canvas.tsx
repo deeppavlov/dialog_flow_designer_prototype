@@ -1,34 +1,34 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { Graph, Mode } from "../types";
 import FloatingNode from "./FloatingNode";
-import useLayout, { nodeHeight, nodeWidth } from "./useLayout";
+import { nodeHeight, nodeWidth } from "./Node";
 import Edge from "./Edge";
 import cn from "classnames";
+import { useStore } from "../store";
+import shallow from "zustand/shallow";
+import pick from "../utils/pick";
 
 const zoomSpeed = 0.99;
 const maxZoom = 1;
 const minZoom = 0.1;
 
-const Canvas: FC<{
-  graph: Graph;
-  mode: Mode;
-  selectedNodeId?: string;
-  onSelectNode: (id: string) => void;
-  onChangeMode: (mode: Mode) => void;
-}> = ({ graph, mode, selectedNodeId, onChangeMode, onSelectNode }) => {
+const Canvas: FC = () => {
+  const { graph, selectedNodeId, nodeLayoutPositions } = useStore(
+    pick("graph", "selectedNodeId", "nodeLayoutPositions"),
+    shallow
+  );
+
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   let { nodes, edges } = graph;
-  const nodePositions = useLayout({ nodes, edges });
   const [jumping, setJumping] = useState(false);
   const [pan, setPan] = useState([0, 0]);
   const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     if (!selectedNodeId || !viewportRef.current) return;
-    const selectedPos = nodePositions.get(selectedNodeId)!;
-    const selectedCenterX = pan[0] + (selectedPos[0] + nodeWidth / 2) * zoom;
-    const selectedCenterY = pan[1] + (selectedPos[1] + nodeHeight / 2) * zoom;
+    const selectedPos = nodeLayoutPositions[selectedNodeId];
+    const selectedCenterX = pan[0] + (selectedPos.x + nodeWidth / 2) * zoom;
+    const selectedCenterY = pan[1] + (selectedPos.y + nodeHeight / 2) * zoom;
     const { width, height } = viewportRef.current.getBoundingClientRect();
     const dx = width / 2 - selectedCenterX;
     const dY = height / 2 - selectedCenterY;
@@ -90,19 +90,15 @@ const Canvas: FC<{
           style={{ zIndex: -1 }}
         >
           {edges.map(({ fromId, toId }) => (
-            <Edge fromNodePos={nodePositions.get(fromId)!} toNodePos={nodePositions.get(toId)!} />
+            <Edge
+              key={fromId + toId}
+              fromNodePos={nodeLayoutPositions[fromId]}
+              toNodePos={nodeLayoutPositions[toId]}
+            />
           ))}
         </svg>
         {nodes.map((node) => (
-          <FloatingNode
-            key={node.id}
-            x={nodePositions.get(node.id)![0]}
-            y={nodePositions.get(node.id)![1]}
-            node={node}
-            selected={node.id === selectedNodeId}
-            onClick={() => onSelectNode(node.id)}
-            onClickAdd={() => onChangeMode(Mode.ADD)}
-          />
+          <FloatingNode key={node.id} node={node} />
         ))}
       </div>
     </div>
