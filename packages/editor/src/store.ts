@@ -1,5 +1,5 @@
 import shallow from "zustand/shallow";
-import create from "zustand";
+import create, { StateCreator } from "zustand";
 import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
 import { Graph, Mode, XY } from "./types";
 import { getLayout } from "./utils/layout";
@@ -52,14 +52,16 @@ export interface State {
    * Hightlight the edge and the two nodes connected by it.
    */
   hoverEdge: (fromId: string | null, toId?: string | null) => void;
+
+  /**
+   * Recreates the state with default values.
+   *
+   * **For testing only!**
+   */
+  resetState: () => void;
 }
 
-/**
- * Connect component to the global store.
- *
- * @see https://github.com/pmndrs/zustand#recipes
- */
-export const useStore = create<State>((set, get) => ({
+const createDefaultState: StateCreator<State, [], [], State> = (set, get, api, mut) => ({
   graph: { edges: [], nodes: [] },
   nodeLayoutPositions: Object.create(null),
   nodeOffsets: Object.create(null),
@@ -98,7 +100,16 @@ export const useStore = create<State>((set, get) => ({
       highlightedEdges: new Set([`${fromId}-${toId}`]),
     });
   },
-}));
+
+  resetState: () => set(createDefaultState(set, get, api, mut)),
+});
+
+/**
+ * Connect component to the global store.
+ *
+ * @see https://github.com/pmndrs/zustand#recipes
+ */
+export const useStore = create<State>(createDefaultState);
 
 /**
  * Bind the store to backend messages and send the ready message.
