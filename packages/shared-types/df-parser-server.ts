@@ -1,11 +1,7 @@
 // This module contains the types shared by the python server and the typescript
 // process talking to it (either the extension or Dream Builder)
 
-export enum NodeType {
-  GLOBAL = "global",
-  LOCAL = "local",
-  REGULAR = "regular",
-}
+export type NodeType = "global" | "local" | "regular";
 
 /**
  * Parsed form of plot, as received from the parser
@@ -81,8 +77,8 @@ export interface Plot {
     [id: string]: {
       object: string;
       parent?: string;
-      args?: string[];
-      kwargs?: Record<string, string>;
+      args?: string[] | string[][];
+      kwargs?: Record<string, string | string[]>;
     };
   };
 }

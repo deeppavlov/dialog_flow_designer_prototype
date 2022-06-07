@@ -5,7 +5,7 @@ export const plotToGraph = (plot: Plot): Graph => {
   const edgeId = ([src, trg]: [string, string]) => `e${src}-${trg}`;
   const globalEdges: any[] = [];
   // Object.values(plot.nodes)
-  //   .filter(({ type }) => type === NodeType.GLOBAL)
+  //   .filter(({ type }) => type === "global")
   //   .flatMap((node) => node.transitions ?? [])
   //   .map((transId) => [transId, plot.transitions[transId]] as [string, Plot["transitions"][string]])
   //   .filter(([_, trans]) => trans.label.startsWith("id#nd"))
@@ -21,7 +21,7 @@ export const plotToGraph = (plot: Plot): Graph => {
     ...globalEdges.map(({ id, cond }) => ({ id, cond })),
   ];
   Object.entries(plot.nodes).forEach(([id, node]) => {
-    if (node.type !== NodeType.REGULAR || !node.transitions) return;
+    if (node.type !== "regular" || !node.transitions) return;
     node.transitions?.forEach((transId) => {
       const trans = plot.transitions[transId];
       if (!trans.label.startsWith("id#nd")) return;
@@ -85,7 +85,7 @@ export const plotToGraph = (plot: Plot): Graph => {
           }
       ),
       ...Object.entries(plot.nodes)
-        .filter(([_, node]) => node.type === NodeType.REGULAR)
+        .filter(([_, node]) => node.type === "regular")
         .map(
           ([id, node]) =>
             <GNode>{

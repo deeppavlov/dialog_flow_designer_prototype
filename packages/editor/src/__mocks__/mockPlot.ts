@@ -1,4 +1,6 @@
-export default {
+import type { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
+
+export default <Plot>{
   flows: {
     "id#fl_af394d02": {
       name: "greeting_flow",

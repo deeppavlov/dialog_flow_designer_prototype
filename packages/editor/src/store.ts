@@ -36,11 +36,6 @@ export interface State {
   setPlot: (newPlot: Plot) => void;
   setSelectedNodeId: (id: string | null) => void;
   setMode: (newMode: Mode) => void;
-
-  /**
-   * Replace state. For testing and stories only.
-   */
-  seed: (newState: State) => void;
 }
 
 /**
@@ -62,8 +57,6 @@ export const useStore = create<State>((set) => ({
   },
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   setMode: (mode) => set({ mode }),
-
-  seed: (newState) => set(newState, true),
 }));
 
 /**
