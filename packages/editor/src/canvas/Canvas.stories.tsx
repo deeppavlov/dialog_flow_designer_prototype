@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useMemo } from "react";
 
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import Canvas from "./Canvas";
-import { Turn } from "../types";
+import musicPlot from "../__mocks__/mockPlot";
+import { GEdge, GNode, Turn } from "../types";
 import { useState } from "react";
+import useGraph, { plotToGraph } from "./useGraph";
+import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
 
 type CanvasType = typeof Canvas;
 
 export default {
-  title: "Canvas",
   component: Canvas,
   decorators: [
     (Story) => (
@@ -74,7 +76,7 @@ ThreeLevelTree.args = {
 };
 
 export const SelectingChildren: ComponentStory<typeof Canvas> = (args) => {
-  const [selected, setSelected] = useState("1")
+  const [selected, setSelected] = useState("1");
   return <Canvas {...args} onSelectNode={setSelected} selectedNodeId={selected} />;
 };
 SelectingChildren.args = {
@@ -139,4 +141,10 @@ WithForwardLink.args = {
       { fromId: "1", toId: "5" },
     ],
   },
+};
+
+export const MusicSkill: ComponentStory<typeof Canvas> = (args) => {
+  const [selected, setSelected] = useState<string>();
+  const graph = useMemo(() => plotToGraph(musicPlot as unknown as Plot), []);
+  return <Canvas {...args} graph={graph} onSelectNode={setSelected} selectedNodeId={selected} />;
 };
