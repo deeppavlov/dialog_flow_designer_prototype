@@ -8,7 +8,7 @@ import { GEdge, GNode, Turn } from "../types";
 import { useState } from "react";
 import { plotToGraph } from "../utils/plot";
 import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
-import { useStore } from "../store";
+import { State, useStore } from "../store";
 import { getLayout } from "../utils/layout";
 
 type CanvasType = typeof Canvas;
@@ -16,12 +16,11 @@ type CanvasType = typeof Canvas;
 export default {
   component: Canvas,
   decorators: [
-    (Story, { parameters }) => {
-      useStore.setState({
-        graph: parameters.graph,
-        nodeLayoutPositions: getLayout(parameters.graph),
-        selectedNodeId: parameters.selectedNodeId ?? null,
-      });
+    (Story, { parameters: state }: { parameters: Partial<State> }) => {
+      if (state.graph && !state.nodeLayoutPositions)
+        state.nodeLayoutPositions = getLayout(state.graph);
+      useStore.setState(state);
+
       return (
         <div
           style={{
@@ -46,7 +45,7 @@ SingleNode.parameters = {
     edges: [],
   },
   selectedNodeId: "id",
-};
+} as Partial<State>;
 
 export const NodeWithTwoChildren = Template.bind({});
 NodeWithTwoChildren.parameters = {
@@ -61,7 +60,7 @@ NodeWithTwoChildren.parameters = {
       { fromId: "1", toId: "3" },
     ],
   },
-};
+} as Partial<State>;
 
 export const ThreeLevelTree = Template.bind({});
 ThreeLevelTree.parameters = {
@@ -82,7 +81,7 @@ ThreeLevelTree.parameters = {
       { fromId: "3", toId: "6" },
     ],
   },
-};
+} as Partial<State>;
 
 export const WithBacklink = Template.bind({});
 WithBacklink.parameters = {
@@ -104,7 +103,7 @@ WithBacklink.parameters = {
       { fromId: "5", toId: "2" },
     ],
   },
-};
+} as Partial<State>;
 
 export const WithForwardLink = Template.bind({});
 WithForwardLink.parameters = {
@@ -126,9 +125,9 @@ WithForwardLink.parameters = {
       { fromId: "1", toId: "5" },
     ],
   },
-};
+} as Partial<State>;
 
 export const MusicSkill = Template.bind({});
 MusicSkill.parameters = {
   graph: plotToGraph(musicPlot),
-};
+} as Partial<State>;
