@@ -5,3 +5,5 @@ venv
 __pycache__
 .coverage
 .pnpm-debug.log
+storybook-static
+build-storybook.log
