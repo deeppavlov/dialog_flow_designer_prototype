@@ -1,5 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
-import useSize from "@react-hook/size";
+import { FC, useEffect, useRef, useState } from "react";
 import { Graph, Mode } from "../types";
 import FloatingNode from "./FloatingNode";
 import useLayout, { nodeHeight, nodeWidth } from "./useLayout";
@@ -19,17 +18,18 @@ const Canvas: FC<{
 }> = ({ graph, mode, selectedNodeId, onChangeMode, onSelectNode }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const nodePositions = useLayout(graph);
+  let { nodes, edges } = graph;
+  const nodePositions = useLayout({ nodes, edges });
   const [jumping, setJumping] = useState(false);
   const [pan, setPan] = useState([0, 0]);
   const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
-    if (!selectedNodeId || !canvasRef.current) return;
+    if (!selectedNodeId || !viewportRef.current) return;
     const selectedPos = nodePositions.get(selectedNodeId)!;
-    const selectedCenterX = pan[0] + selectedPos[0] + nodeWidth / 2;
-    const selectedCenterY = pan[1] + selectedPos[1] + nodeHeight / 2;
-    const { width, height } = canvasRef.current.getBoundingClientRect();
+    const selectedCenterX = pan[0] + (selectedPos[0] + nodeWidth / 2) * zoom;
+    const selectedCenterY = pan[1] + (selectedPos[1] + nodeHeight / 2) * zoom;
+    const { width, height } = viewportRef.current.getBoundingClientRect();
     const dx = width / 2 - selectedCenterX;
     const dY = height / 2 - selectedCenterY;
     setJumping(true);
@@ -86,14 +86,14 @@ const Canvas: FC<{
           version="1.1"
           baseProfile="full"
           xmlns="http://www.w3.org/2000/svg"
-          className="h-full w-full top-0 left-0 absolute"
+          className="h-full w-full top-0 left-0 absolute overflow-visible"
           style={{ zIndex: -1 }}
         >
-          {graph.edges.map(({ fromId, toId }) => (
+          {edges.map(({ fromId, toId }) => (
             <Edge fromNodePos={nodePositions.get(fromId)!} toNodePos={nodePositions.get(toId)!} />
           ))}
         </svg>
-        {graph.nodes.map((node) => (
+        {nodes.map((node) => (
           <FloatingNode
             key={node.id}
             x={nodePositions.get(node.id)![0]}
