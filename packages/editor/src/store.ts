@@ -26,6 +26,14 @@ export interface State {
    */
   selectedNodeId: string | null;
   /**
+   * IDs of nodes that are connected to hovered node, or an edge between them is hovered
+   */
+  highlightedNodes: Set<string>;
+  /**
+   * Concatenated IDs of edges to be highlighted, ie. `${fromId}-${toId}`
+   */
+  highlightedEdges: Set<string>;
+  /**
    * Editor mode (eg. adding, debugging etc.)
    */
   mode: Mode;
@@ -36,6 +44,14 @@ export interface State {
   setPlot: (newPlot: Plot) => void;
   setSelectedNodeId: (id: string | null) => void;
   setMode: (newMode: Mode) => void;
+  /**
+   * Highlight this node, its edges, and all the nodes connected to it.
+   */
+  hoverNode: (id: string | null) => void;
+  /**
+   * Hightlight the edge and the two nodes connected by it.
+   */
+  hoverEdge: (fromId: string | null, toId?: string | null) => void;
 }
 
 /**
@@ -43,12 +59,14 @@ export interface State {
  *
  * @see https://github.com/pmndrs/zustand#recipes
  */
-export const useStore = create<State>((set) => ({
+export const useStore = create<State>((set, get) => ({
   graph: { edges: [], nodes: [] },
   nodeLayoutPositions: Object.create(null),
   nodeOffsets: Object.create(null),
   selectedNodeId: null,
   mode: Mode.DEFAULT,
+  highlightedNodes: new Set(),
+  highlightedEdges: new Set(),
 
   setPlot: (plot) => {
     const graph = plotToGraph(plot);
@@ -57,6 +75,29 @@ export const useStore = create<State>((set) => ({
   },
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   setMode: (mode) => set({ mode }),
+  hoverNode: (id) => {
+    if (!id) return set({ highlightedNodes: new Set(), highlightedEdges: new Set() });
+    const { graph } = get();
+    const highlightedNodes = new Set([id]);
+    const highlightedEdges = new Set([id]);
+    graph.edges.forEach(({ fromId, toId }) => {
+      if (fromId === id) {
+        highlightedNodes.add(toId);
+        highlightedEdges.add(`${fromId}-${toId}`);
+      } else if (toId === id) {
+        highlightedNodes.add(fromId);
+        highlightedEdges.add(`${fromId}-${toId}`);
+      }
+    });
+    set({ highlightedNodes, highlightedEdges });
+  },
+  hoverEdge: (fromId, toId = null) => {
+    if (!fromId || !toId) return set({ highlightedNodes: new Set(), highlightedEdges: new Set() });
+    set({
+      highlightedNodes: new Set([fromId, toId]),
+      highlightedEdges: new Set([`${fromId}-${toId}`]),
+    });
+  },
 }));
 
 /**

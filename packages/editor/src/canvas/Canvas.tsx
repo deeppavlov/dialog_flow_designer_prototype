@@ -89,12 +89,8 @@ const Canvas: FC = () => {
           className="h-full w-full top-0 left-0 absolute overflow-visible"
           style={{ zIndex: -1 }}
         >
-          {edges.map(({ fromId, toId }) => (
-            <Edge
-              key={fromId + toId}
-              fromNodePos={nodeLayoutPositions[fromId]}
-              toNodePos={nodeLayoutPositions[toId]}
-            />
+          {edges.map((e) => (
+            <Edge key={e.fromId + e.toId} edge={e} />
           ))}
         </svg>
         {nodes.map((node) => (
