@@ -3,5 +3,6 @@
   "python.testing.pytestEnabled": true,
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
-  "editor.rulers": [100]
+  "editor.rulers": [100],
+  "eslint.workingDirectories": ["packages/editor", "packages/extension"]
 }
