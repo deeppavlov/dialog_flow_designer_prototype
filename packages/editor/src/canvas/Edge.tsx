@@ -13,13 +13,21 @@ const Edge: FC<{ edge: GEdge }> = ({ edge: { fromId, toId } }) => {
     pick("highlightedEdges", "hoverEdge", "nodeLayoutPositions"),
     shallow
   );
-  const fromNodePos = nodeLayoutPositions[fromId];
-  const toNodePos = nodeLayoutPositions[toId];
+  const { fromNodePosX, fromNodePosY, toNodePosX, toNodePosY } = useStore((s) => {
+    const { x: fromNodeDragX = 0, y: fromNodeDragY = 0 } = s.nodeOffsets[fromId] ?? {};
+    const { x: toNodeDragX = 0, y: toNodeDragY = 0 } = s.nodeOffsets[toId] ?? {};
+    return {
+      fromNodePosX: s.nodeLayoutPositions[fromId].x + fromNodeDragX,
+      fromNodePosY: s.nodeLayoutPositions[fromId].y + fromNodeDragY,
+      toNodePosX: s.nodeLayoutPositions[toId].x + toNodeDragX,
+      toNodePosY: s.nodeLayoutPositions[toId].y + toNodeDragY,
+    };
+  }, shallow);
 
-  const fromX = fromNodePos.x + nodeWidth;
-  const fromY = fromNodePos.y + nodeHeight / 2;
-  const toX = toNodePos.x;
-  const toY = toNodePos.y + nodeHeight / 2;
+  const fromX = fromNodePosX + nodeWidth;
+  const fromY = fromNodePosY + nodeHeight / 2;
+  const toX = toNodePosX;
+  const toY = toNodePosY + nodeHeight / 2;
 
   const backlink = fromX > toX;
   const curve = backlink

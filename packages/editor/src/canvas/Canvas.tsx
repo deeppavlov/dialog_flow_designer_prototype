@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import * as Rematrix from "rematrix";
-import FloatingNode from "./FloatingNode";
+import CanvasNode from "./CanvasNode";
 import { nodeHeight, nodeWidth } from "./Node";
 import Edge from "./Edge";
 import cn from "classnames";
@@ -56,16 +56,19 @@ const Canvas: FC = () => {
       return [prevTrans, Rematrix.translate(dX, dY)].reverse().reduce(Rematrix.multiply);
     });
   }, [nodeLayoutPositions, selectedNodeId]);
-
+  // End jump
   const handleTransitionEnd = () => setJumping(false);
 
   // Handle panning
+  const [isPanning, setPanning] = useState(false);
   const handlePointerMove: React.PointerEventHandler = (ev) => {
-    if (ev.buttons !== 1) return;
+    if (!isPanning || ev.buttons !== 1) return;
     ev.preventDefault();
     ev.stopPropagation();
     applyTransforms(Rematrix.translate(ev.movementX, ev.movementY));
   };
+  const handleMouseDown = () => setPanning(true);
+  const handleMouseUp = () => setPanning(false);
 
   // Handle zooming
   const handleWheel: React.WheelEventHandler = (ev) => {
@@ -93,6 +96,8 @@ const Canvas: FC = () => {
     <div
       ref={canvasRef}
       className="h-full bg-neutral-200 w-full overflow-hidden"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       onPointerMove={handlePointerMove}
       onWheel={handleWheel}
     >
@@ -116,7 +121,7 @@ const Canvas: FC = () => {
           ))}
         </svg>
         {nodes.map((node) => (
-          <FloatingNode key={node.id} node={node} />
+          <CanvasNode key={node.id} node={node} />
         ))}
       </div>
     </div>

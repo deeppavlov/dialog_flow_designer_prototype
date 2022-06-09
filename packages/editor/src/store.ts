@@ -52,6 +52,10 @@ export interface State {
    * Hightlight the edge and the two nodes connected by it.
    */
   hoverEdge: (fromId: string | null, toId?: string | null) => void;
+  /**
+   * Set the offset for the given node.
+   */
+  addNodeOffset: (id: string, delta: XY) => void;
 
   /**
    * Recreates the state with default values.
@@ -99,6 +103,15 @@ const createDefaultState: StateCreator<State, [], [], State> = (set, get, api, m
       highlightedNodes: new Set([fromId, toId]),
       highlightedEdges: new Set([`${fromId}-${toId}`]),
     });
+  },
+  addNodeOffset: (id, { x, y }) => {
+    const { x: oldX = 0, y: oldY = 0 } = get().nodeOffsets[id] ?? {};
+    set((s) => ({
+      nodeOffsets: {
+        ...s.nodeOffsets,
+        [id]: { x: oldX + x, y: oldY + y },
+      },
+    }));
   },
 
   resetState: () => set(createDefaultState(set, get, api, mut)),
