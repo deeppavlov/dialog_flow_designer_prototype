@@ -114,7 +114,7 @@ const createDefaultState: StateCreator<State, [], [], State> = (set, get, api, m
     }));
   },
 
-  resetState: () => set(createDefaultState(set, get, api, mut)),
+  resetState: () => set(createDefaultState(set, get, api, mut), true),
 });
 
 /**
