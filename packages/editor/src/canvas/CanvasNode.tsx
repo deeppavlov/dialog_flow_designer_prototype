@@ -49,7 +49,11 @@ const CanvasNode: FC<{ node: GNode }> = ({ node }) => {
 
   return (
     <div
-      className={cn("absolute", highlightedNodes.has(node.id) && "ring ring-green-400")}
+      className={cn(
+        "absolute",
+        highlightedNodes.has(node.id) && "ring ring-green-400",
+        isDragging && "z-10"
+      )}
       style={{ transform: `translate(${x}px, ${y}px)`, cursor: "grab" }}
       onDoubleClick={() => setSelectedNodeId(node.id)}
       onMouseEnter={() => hoverNode(node.id)}
