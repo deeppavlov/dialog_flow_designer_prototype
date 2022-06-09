@@ -4,7 +4,7 @@
   "description": "Dialog Flow Designer VSCode extension",
   "scripts": {
     "clean": "rimraf dist",
-    "start": "node scripts/dev.mjs",
+    "dev": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "vscode:prepublish": "npm run build"
   },
