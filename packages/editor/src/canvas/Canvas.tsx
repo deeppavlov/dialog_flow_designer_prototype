@@ -56,6 +56,8 @@ const Canvas: FC<{ zoomWithControl?: boolean }> = ({ zoomWithControl = true }) =
   const [isPanning, setPanning] = useState(false);
   const handleMouseMove: React.MouseEventHandler = (ev) => {
     if (isPanning && ev.buttons === 1 && ev.ctrlKey) {
+      ev.preventDefault();
+      ev.stopPropagation();
       applyViewTransforms(Rematrix.translate(ev.movementX, ev.movementY));
       // The window might not have had the focus when the panning started,
       // but it definitely has it now

@@ -74,8 +74,6 @@ const CanvasNode: FC<{ node: GNode; layoutPos: XY }> = ({
       style={{ transform: `translate(${layoutX}px, ${layoutY}px)` }}
       onMouseEnter={() => hoverNode(node.id)}
       onMouseLeave={() => hoverNode(null)}
-      // Keep it from bubbling up to the canvas and trigger pan
-      onMouseDown={(ev) => ev.stopPropagation()}
     >
       <Node node={node} selected={selectedNodeId === node.id} onClickAdd={handleClickAdd} />
     </div>
