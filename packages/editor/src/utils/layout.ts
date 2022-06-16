@@ -1,5 +1,6 @@
+import { useMemo } from "react";
 import { nodeHeight, nodeWidth } from "../canvas/Node";
-import { Graph, GNode, XY } from "../types";
+import { Graph, XY } from "../types";
 
 const columnGap = 100;
 const rowGap = 40;
@@ -58,3 +59,5 @@ export const getLayout = (graph: Graph) => {
 
   return positions;
 };
+
+export const useLayout = (graph: Graph) => useMemo(() => getLayout(graph), [graph]);

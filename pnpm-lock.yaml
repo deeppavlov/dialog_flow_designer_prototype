@@ -47,6 +47,7 @@ importers:
       eslint-plugin-react: ^7.30.0
       eslint-plugin-react-hooks: ^4.5.0
       fuzzysort: ^2.0.1
+      immer: ^9.0.15
       nanoid: ^3.3.4
       object-hash: ^3.0.0
       react: ^18.0.0
@@ -56,6 +57,7 @@ importers:
       require-from-string: ^2.0.2
       typescript: ^4.6.3
       unplugin-icons: ^0.14.3
+      use-resize-observer: ^9.0.2
       vite: ^2.9.9
       vite-plugin-windicss: ^1.8.4
       windicss: ^3.5.4
@@ -63,13 +65,15 @@ importers:
     dependencies:
       classnames: 2.3.1
       fuzzysort: 2.0.1
+      immer: 9.0.15
       nanoid: 3.3.4
       object-hash: 3.0.0
       react: 18.1.0
       react-dom: 18.1.0_react@18.1.0
       react-flow-renderer: 10.3.4_react-dom@18.1.0+react@18.1.0
       rematrix: 0.7.2
-      zustand: 4.0.0-rc.1_react@18.1.0
+      use-resize-observer: 9.0.2_react-dom@18.1.0+react@18.1.0
+      zustand: 4.0.0-rc.1_immer@9.0.15+react@18.1.0
     devDependencies:
       '@babel/core': 7.18.2
       '@dialog-flow-designer/shared-types': link:../shared-types
@@ -1961,6 +1965,10 @@ packages:
       '@jridgewell/resolve-uri': 3.0.7
       '@jridgewell/sourcemap-codec': 1.4.13
     dev: true
+
+  /@juggle/resize-observer/3.3.1:
+    resolution: {integrity: sha512-zMM9Ds+SawiUkakS7y94Ymqx+S0ORzpG3frZirN3l+UlXUmSUR7hF4wxCVqW+ei94JzV5kt0uXBcoOEAuiydrw==}
+    dev: false
 
   /@mdx-js/mdx/1.6.22:
     resolution: {integrity: sha512-AMxuLxPz2j5/6TpF/XSdKpQP1NlG0z11dFOlq+2IP/lSgl11GY8ji6S/rgsViN/L0BDvHvUMruRb7ub+24LUYA==}
@@ -8057,6 +8065,10 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
+  /immer/9.0.15:
+    resolution: {integrity: sha512-2eB/sswms9AEUSkOm4SbV5Y7Vmt/bKRwByd52jfLkW4OLYeaTP3EEiJ9agqU0O/tq6Dk62Zfj+TJSqfm1rLVGQ==}
+    dev: false
+
   /import-fresh/3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
@@ -12390,6 +12402,17 @@ packages:
       querystring: 0.2.0
     dev: true
 
+  /use-resize-observer/9.0.2_react-dom@18.1.0+react@18.1.0:
+    resolution: {integrity: sha512-JOzsmF3/IDmtjG7OE5qXOP69LEpBpwhpLSiT1XgSr+uFRX0ftJHQnDaP7Xq+uhbljLYkJt67sqsbnyXBjiY8ig==}
+    peerDependencies:
+      react: 16.8.0 - 18
+      react-dom: 16.8.0 - 18
+    dependencies:
+      '@juggle/resize-observer': 3.3.1
+      react: 18.1.0
+      react-dom: 18.1.0_react@18.1.0
+    dev: false
+
   /use-sync-external-store/1.1.0_react@18.1.0:
     resolution: {integrity: sha512-SEnieB2FPKEVne66NpXPd1Np4R1lTNKfjuy3XdIoPQKYBAFdzbzSZlSn1KJZUiihQLQC5Znot4SBz1EOTBwQAQ==}
     peerDependencies:
@@ -12933,7 +12956,7 @@ packages:
       react: 18.1.0
     dev: false
 
-  /zustand/4.0.0-rc.1_react@18.1.0:
+  /zustand/4.0.0-rc.1_immer@9.0.15+react@18.1.0:
     resolution: {integrity: sha512-qgcs7zLqBdHu0PuT3GW4WCIY5SgXdsv30GQMu9Qpp1BA2aS+sNS8l4x0hWuyEhjXkN+701aGWawhKDv6oWJAcw==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
@@ -12945,6 +12968,7 @@ packages:
       react:
         optional: true
     dependencies:
+      immer: 9.0.15
       react: 18.1.0
       use-sync-external-store: 1.1.0_react@18.1.0
     dev: false

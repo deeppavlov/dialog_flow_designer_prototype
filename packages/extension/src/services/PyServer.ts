@@ -23,6 +23,7 @@ const typePrefixes = {
   py_def: "df",
   response: "rs",
   transition: "tr",
+  node: "nd",
 };
 const fakeDb: Record<string, Plot> = {};
 /**
@@ -85,11 +86,12 @@ export default class PyServer {
   public postPlotObj = async (
     uri: string,
     type: keyof typeof typePrefixes,
-    props: Record<string, string>
+    props: Record<string, string>,
+    determinedId?: string
   ) => {
     const oldPlot = fakeDb[uri];
     const typePlural = type === "linking" ? type : type + "s";
-    const newId = `id#${typePrefixes[type]}_${nanoid(8)}`;
+    const newId = determinedId ?? `id#${typePrefixes[type]}_${nanoid(8)}`;
     const newPlot: Plot = {
       ...oldPlot,
       [typePlural as keyof Plot]: {

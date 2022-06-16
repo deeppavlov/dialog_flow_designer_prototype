@@ -5,10 +5,16 @@ export interface XY {
   y: number;
 }
 
+export interface Size {
+  width: number;
+  height: number;
+}
+
 export interface Property {
   type: string;
   value: string;
 }
+
 export enum Turn {
   USER,
   BOT,

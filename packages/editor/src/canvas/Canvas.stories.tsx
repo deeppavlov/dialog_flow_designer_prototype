@@ -4,12 +4,44 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import Canvas from "./Canvas";
 import musicPlot from "../__mocks__/mockPlot";
-import { GEdge, GNode, Turn } from "../types";
+import { GEdge, GNode, Graph, Turn } from "../types";
 import { useState } from "react";
 import { plotToGraph } from "../utils/plot";
 import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
 import { State, useStore } from "../store";
 import { getLayout } from "../utils/layout";
+
+function createNodesAndEdges(xNodes = 10, yNodes = 10): Graph {
+  const nodes: GNode[] = [];
+  const edges: GEdge[] = [];
+  let nodeId = 1;
+  let recentNodeId = null;
+
+  for (let y = 0; y < yNodes; y++) {
+    for (let x = 0; x < xNodes; x++) {
+      const data = { label: `Node ${nodeId}` };
+      const node: GNode = {
+        id: `stress-${nodeId.toString()}`,
+        label: data.label,
+        properties: [],
+        turn: Turn.BOT,
+      };
+      nodes.push(node);
+
+      if (recentNodeId && nodeId <= xNodes * yNodes) {
+        edges.push({
+          fromId: `stress-${recentNodeId.toString()}`,
+          toId: `stress-${nodeId.toString()}`,
+        });
+      }
+
+      recentNodeId = nodeId;
+      nodeId++;
+    }
+  }
+
+  return { nodes, edges };
+}
 
 type CanvasType = typeof Canvas;
 
@@ -42,7 +74,7 @@ const Template: ComponentStory<typeof Canvas> = () => <Canvas />;
 export const SingleNode = Template.bind({});
 SingleNode.parameters = {
   state: {
-    graph: {
+    _graphState: {
       nodes: [{ id: "id", label: "Start node", turn: Turn.BOT, properties: [] }],
       edges: [],
     },
@@ -53,7 +85,7 @@ SingleNode.parameters = {
 export const NodeWithTwoChildren = Template.bind({});
 NodeWithTwoChildren.parameters = {
   state: {
-    graph: {
+    _graphState: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -70,7 +102,7 @@ NodeWithTwoChildren.parameters = {
 export const ThreeLevelTree = Template.bind({});
 ThreeLevelTree.parameters = {
   state: {
-    graph: {
+    _graphState: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -93,7 +125,7 @@ ThreeLevelTree.parameters = {
 export const WithBacklink = Template.bind({});
 WithBacklink.parameters = {
   state: {
-    graph: {
+    _graphState: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -117,7 +149,7 @@ WithBacklink.parameters = {
 export const WithForwardLink = Template.bind({});
 WithForwardLink.parameters = {
   state: {
-    graph: {
+    _graphState: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -141,6 +173,13 @@ WithForwardLink.parameters = {
 export const MusicSkill = Template.bind({});
 MusicSkill.parameters = {
   state: {
-    graph: plotToGraph(musicPlot),
+    _graphState: plotToGraph(musicPlot),
+  } as Partial<State>,
+};
+
+export const StressTest = Template.bind({});
+StressTest.parameters = {
+  state: {
+    _graphState: createNodesAndEdges(20, 20),
   } as Partial<State>,
 };

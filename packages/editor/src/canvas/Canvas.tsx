@@ -1,71 +1,43 @@
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useRef, useState } from "react";
 import * as Rematrix from "rematrix";
 import CanvasNode from "./CanvasNode";
-import { nodeHeight, nodeWidth } from "./Node";
 import Edge from "./Edge";
 import cn from "classnames";
-import { useStore } from "../store";
+import useStore, { applyViewTransforms, endJump, useGraph } from "../store";
 import shallow from "zustand/shallow";
 import pick from "../utils/pick";
+import { useLayout } from "../utils/layout";
+import useResizeObserver from "use-resize-observer";
 
 const maxZoom = 1;
 const minZoom = 0.1;
 
 const Canvas: FC = () => {
-  const { graph, selectedNodeId, nodeLayoutPositions } = useStore(
-    pick("graph", "selectedNodeId", "nodeLayoutPositions"),
+  const { viewTransform, viewportJumping } = useStore(
+    pick("viewTransform", "viewportJumping"),
     shallow
   );
-
+  const graph = useGraph();
+  const nodeLayoutPositions = useLayout(graph);
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
-  const { nodes, edges } = graph;
-  const [jumping, setJumping] = useState(false);
-  const [viewTransform, setTransfrom] = useState<Rematrix.Matrix3D>(Rematrix.identity());
 
-  /**
-   * Applies the given transforms to the current transforms, **from left to right**.
-   */
-  const applyTransforms = (...matrices: Rematrix.Matrix3D[]) =>
-    setTransfrom((prevTransform) =>
-      [prevTransform, ...matrices]
-        .reverse() // We reverse so arguments can be given in more intuitive, l->r order
-        .reduce(Rematrix.multiply)
-    );
-
-  // Jump to selected node
-  useEffect(() => {
-    setTransfrom((prevTrans) => {
-      if (!selectedNodeId || !viewportRef.current || !canvasRef.current) return prevTrans;
-      // Get the view's offset relative to the canvas origin
-      const { x: viewClientX, y: viewClientY } = viewportRef.current.getBoundingClientRect();
-      const { x: canvasX, y: canvasY, width, height } = canvasRef.current.getBoundingClientRect();
-      const viewXInCanvas = viewClientX - canvasX;
-      const viewYInCanvas = viewClientY - canvasY;
-
-      // Get the selected node's offset relative to the canvas origin
-      const zoom = prevTrans[/* scale */ 0];
-      const selectedPos = nodeLayoutPositions[selectedNodeId];
-      const xInCanvas = viewXInCanvas + (selectedPos.x + nodeWidth / 2) * zoom;
-      const yInCanvas = viewYInCanvas + (selectedPos.y + nodeHeight / 2) * zoom;
-
-      // Calculate offset to jump
-      const dX = width / 2 - xInCanvas;
-      const dY = height / 2 - yInCanvas;
-      setJumping(true);
-      return [prevTrans, Rematrix.translate(dX, dY)].reverse().reduce(Rematrix.multiply);
-    });
-  }, [nodeLayoutPositions, selectedNodeId]);
-  // End jump
-  const handleTransitionEnd = () => setJumping(false);
+  // Update the canvas size in store, which is used for calculating viewport transform
+  // when focusing a set point.
+  useResizeObserver<HTMLDivElement>({
+    ref: canvasRef,
+    onResize: ({ height = 0, width = 0 }) => {
+      useStore.setState({ canvasSize: { width, height } });
+    },
+  });
 
   // Handle panning
   const [isPanning, setPanning] = useState(false);
-  const handlePointerMove: React.PointerEventHandler = (ev) => {
+  const handleMouseMove: React.MouseEventHandler = (ev) => {
     if (!isPanning || ev.buttons !== 1) return;
     ev.preventDefault();
     ev.stopPropagation();
-    applyTransforms(Rematrix.translate(ev.movementX, ev.movementY));
+    applyViewTransforms(Rematrix.translate(ev.movementX, ev.movementY));
   };
   const handleMouseDown = () => setPanning(true);
   const handleMouseUp = () => setPanning(false);
@@ -85,7 +57,7 @@ const Canvas: FC = () => {
     const canvasRect = canvasRef.current.getBoundingClientRect();
     const mouseX = clientX - canvasRect.x;
     const mouseY = clientY - canvasRect.y;
-    applyTransforms(
+    applyViewTransforms(
       Rematrix.translate(-mouseX, -mouseY),
       Rematrix.scale(zoomMul),
       Rematrix.translate(mouseX, mouseY)
@@ -98,13 +70,16 @@ const Canvas: FC = () => {
       className="h-full bg-neutral-200 w-full overflow-hidden"
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      onPointerMove={handlePointerMove}
+      onMouseMove={handleMouseMove}
       onWheel={handleWheel}
     >
       <div
         ref={viewportRef}
-        className={cn("h-full w-full relative origin-top-left", jumping && "transition-transform")}
-        onTransitionEnd={handleTransitionEnd}
+        className={cn(
+          "h-full w-full relative origin-top-left",
+          viewportJumping && "transition-transform"
+        )}
+        onTransitionEnd={endJump}
         style={{
           transform: Rematrix.toString(viewTransform),
         }}
@@ -116,12 +91,17 @@ const Canvas: FC = () => {
           className="h-full w-full top-0 left-0 absolute overflow-visible"
           style={{ zIndex: -1 }}
         >
-          {edges.map((e) => (
-            <Edge key={e.fromId + e.toId} edge={e} />
+          {graph.edges.map((e) => (
+            <Edge
+              key={e.fromId + e.toId}
+              edge={e}
+              fromLayoutPos={nodeLayoutPositions[e.fromId]}
+              toLayoutPos={nodeLayoutPositions[e.toId]}
+            />
           ))}
         </svg>
-        {nodes.map((node) => (
-          <CanvasNode key={node.id} node={node} />
+        {graph.nodes.map((node) => (
+          <CanvasNode key={node.id} node={node} layoutPos={nodeLayoutPositions[node.id]} />
         ))}
       </div>
     </div>

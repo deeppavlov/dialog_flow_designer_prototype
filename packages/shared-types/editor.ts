@@ -27,24 +27,56 @@ interface DropNodeAction {
 }
 
 /**
- * Add a new transition (condition) to the plot
+ * Add a new transition to the plot (**between two existing nodes!**)
  */
 interface AddTransAction {
   name: "add_trans";
   payload: {
     sourceNodeId: string;
+    targetNodeId: string;
+    /**
+     * Optionally determine the id of the new object
+     */
+    newId?: string;
+  };
+}
+
+/**
+ * Add a new *transition and connected node* to the plot
+ */
+interface AddNodeAction {
+  name: "add_node";
+  payload: {
+    sourceNodeId: string;
+    /**
+     * Optionally determine the id of the new transition
+     */
+    newTransId?: string;
+    /**
+     * Optionally determine the id of the new node
+     */
+    newNodeId?: string;
   };
 }
 
 /**
  * Add a new node to the plot
  */
-interface AddNodeAction {
+interface AddNodeToTransAction {
   name: "add_node";
   payload: {
-    sourceTransId: string;
+    sourceNodeId: string;
+    /**
+     * Optionally determine the id of the new transition
+     */
+    newTransId?: string;
+    /**
+     * Optionally determine the id of the new node
+     */
+    newNodeId?: string;
   };
 }
+
 
 /**
  * Connect an existing transition to another node, or vica versa

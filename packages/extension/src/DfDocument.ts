@@ -43,6 +43,7 @@ export default class DfDocument implements vscode.Disposable {
    * eg. changin/adding objects - as opposed to action on the view.
    */
   private handleEditorAction = async (view: DfView, action: DocumentAction) => {
+    const uri = this.document.uri.toString();
     switch (action.name) {
       /**
        * View ready to accept first update
@@ -51,6 +52,18 @@ export default class DfDocument implements vscode.Disposable {
         // Because opening second/third views is quite rare, we do not cache this value
         const { plot } = await this.getPlot();
         view.pushEditorState({ plot });
+        break;
+      }
+
+      /**
+       * Add a transition and a response node
+       */
+      case "add_node": {
+        const { sourceNodeId, newNodeId, newTransId } = action.payload;
+        // First add the node
+        this.pyServer.postPlotObj(uri, "node", {}, newNodeId);
+        // Then add the transition
+        this.pyServer.postPlotObj(uri, "transition", {}, newTransId);
         break;
       }
     }
