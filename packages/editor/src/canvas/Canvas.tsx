@@ -1,4 +1,4 @@
-import React, { FC, useRef, useState } from "react";
+import React, { FC, useRef, useState, useEffect } from "react";
 import * as Rematrix from "rematrix";
 import CanvasNode from "./CanvasNode";
 import Edge from "./Edge";
@@ -9,10 +9,11 @@ import pick from "../utils/pick";
 import { useLayout } from "../utils/layout";
 import useResizeObserver from "use-resize-observer";
 
+const scrollSpeedModifier = 0.5;
 const maxZoom = 1;
 const minZoom = 0.1;
 
-const Canvas: FC = () => {
+const Canvas: FC<{ zoomWithControl?: boolean }> = ({ zoomWithControl = true }) => {
   const { viewTransform, viewportJumping } = useStore(
     pick("viewTransform", "viewportJumping"),
     shallow
@@ -31,46 +32,85 @@ const Canvas: FC = () => {
     },
   });
 
-  // Handle panning
+  // Handle control key (used for panning with mouse when held), and prevent ctrl+scroll
+  // causing page level zoom
+  const [ctrlHeld, setCtrlHeld] = useState(false);
+  useEffect(() => {
+    const handleKeyDown = (ev: KeyboardEvent) => ev.key === "Control" && setCtrlHeld(true);
+    const handleKeyUp = (ev: KeyboardEvent) => ev.key === "Control" && setCtrlHeld(false);
+    const preventZoom = (ev: MouseEvent) => ev.preventDefault();
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("wheel", preventZoom, { passive: false });
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("wheel", preventZoom);
+    };
+  }, []);
+  // Just in case control was pressed/released outside of our window
+  const handleMouseEnter: React.MouseEventHandler = (ev) =>
+    ctrlHeld !== ev.ctrlKey && setCtrlHeld(ev.ctrlKey);
+
+  // Handle panning with mouse
   const [isPanning, setPanning] = useState(false);
   const handleMouseMove: React.MouseEventHandler = (ev) => {
-    if (!isPanning || ev.buttons !== 1) return;
-    ev.preventDefault();
-    ev.stopPropagation();
-    applyViewTransforms(Rematrix.translate(ev.movementX, ev.movementY));
+    if (isPanning && ev.buttons === 1 && ev.ctrlKey) {
+      applyViewTransforms(Rematrix.translate(ev.movementX, ev.movementY));
+      // The window might not have had the focus when the panning started,
+      // but it definitely has it now
+      if (!ctrlHeld) setCtrlHeld(true);
+    }
   };
   const handleMouseDown = () => setPanning(true);
   const handleMouseUp = () => setPanning(false);
 
-  // Handle zooming
+  // Handle scrolling
   const handleWheel: React.WheelEventHandler = (ev) => {
-    const { deltaY, clientX, clientY } = ev;
-    const zoom = viewTransform[/* scale */ 0];
-    if (
-      !viewportRef.current ||
-      !canvasRef.current ||
-      (zoom >= maxZoom && deltaY < 0) ||
-      (zoom <= minZoom && deltaY > 0)
-    )
-      return;
-    const zoomMul = deltaY < 0 ? 1.1 : 0.9;
-    const canvasRect = canvasRef.current.getBoundingClientRect();
-    const mouseX = clientX - canvasRect.x;
-    const mouseY = clientY - canvasRect.y;
-    applyViewTransforms(
-      Rematrix.translate(-mouseX, -mouseY),
-      Rematrix.scale(zoomMul),
-      Rematrix.translate(mouseX, mouseY)
-    );
+    const { deltaX, deltaY, clientX, clientY } = ev;
+    if ((ev.ctrlKey && zoomWithControl) || (!zoomWithControl && ev.shiftKey)) {
+      // The window might not have had the focus when the panning started,
+      // but it definitely has it now
+      if (!ctrlHeld) setCtrlHeld(true);
+
+      // Zooming with control/shift pressed
+      const zoom = viewTransform[/* scale */ 0];
+      if (
+        !viewportRef.current ||
+        !canvasRef.current ||
+        (zoom >= maxZoom && deltaY < 0) ||
+        (zoom <= minZoom && deltaY > 0)
+      )
+        return;
+      const zoomMul = deltaY < 0 ? 1.1 : 0.9;
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const mouseX = clientX - canvasRect.x;
+      const mouseY = clientY - canvasRect.y;
+      applyViewTransforms(
+        Rematrix.translate(-mouseX, -mouseY),
+        Rematrix.scale(zoomMul),
+        Rematrix.translate(mouseX, mouseY)
+      );
+    } else {
+      // Scrolling (panning)
+      if (ev.shiftKey) {
+        // Shift pressed -> scroll horizontally
+        applyViewTransforms(Rematrix.translate(-deltaY * scrollSpeedModifier, 0));
+      } else {
+        applyViewTransforms(Rematrix.translate(-deltaX, -deltaY * scrollSpeedModifier));
+      }
+    }
   };
 
   return (
     <div
       ref={canvasRef}
       className="h-full bg-neutral-200 w-full overflow-hidden"
+      style={{ cursor: ctrlHeld ? "move" : "default" }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
       onWheel={handleWheel}
     >
       <div
