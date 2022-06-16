@@ -26,15 +26,17 @@ const Node: FC<{
     )}
   >
     {label}
-    <div className="cursor-pointer h-full left-full top-0 w-10 hidden absolute items-center justify-center display-none hover:flex group-hover:flex">
-      <div className="bg-white rounded-1 h-[17px] w-[17px] relative">
+    <div className="h-full left-full top-0 w-10 hidden absolute items-center justify-center display-none hover:flex group-hover:flex">
+      <div
+        className="bg-white cursor-pointer rounded-1 h-[18px] w-[18px] relative"
+        onClick={(ev) => (ev.stopPropagation(), onClickAdd())}
+      >
         <IconAddFilled
           style={{
             transform: "translate(-3px, -3px)",
           }}
-          fontSize="20"
+          fontSize="22"
           color="#10b981"
-          onClick={(ev) => (ev.stopPropagation(), onClickAdd())}
         />
       </div>
     </div>
