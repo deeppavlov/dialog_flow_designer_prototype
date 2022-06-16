@@ -8,7 +8,7 @@ import { GEdge, GNode, Graph, Turn } from "../types";
 import { useState } from "react";
 import { plotToGraph } from "../utils/plot";
 import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
-import { State, useStore } from "../store";
+import { resetState, State, useStore } from "../store";
 import { getLayout } from "../utils/layout";
 
 function createNodesAndEdges(xNodes = 10, yNodes = 10): Graph {
@@ -49,9 +49,7 @@ export default {
   component: Canvas,
   decorators: [
     (Story, { parameters: { state } }) => {
-      useStore.getState().resetState();
-      if (state.graph && !state.nodeLayoutPositions)
-        state.nodeLayoutPositions = getLayout(state.graph);
+      resetState();
       useStore.setState(state);
 
       return (
@@ -74,7 +72,7 @@ const Template: ComponentStory<typeof Canvas> = () => <Canvas />;
 export const SingleNode = Template.bind({});
 SingleNode.parameters = {
   state: {
-    _graphState: {
+    graph: {
       nodes: [{ id: "id", label: "Start node", turn: Turn.BOT, properties: [] }],
       edges: [],
     },
@@ -85,7 +83,7 @@ SingleNode.parameters = {
 export const NodeWithTwoChildren = Template.bind({});
 NodeWithTwoChildren.parameters = {
   state: {
-    _graphState: {
+    graph: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -102,7 +100,7 @@ NodeWithTwoChildren.parameters = {
 export const ThreeLevelTree = Template.bind({});
 ThreeLevelTree.parameters = {
   state: {
-    _graphState: {
+    graph: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -125,7 +123,7 @@ ThreeLevelTree.parameters = {
 export const WithBacklink = Template.bind({});
 WithBacklink.parameters = {
   state: {
-    _graphState: {
+    graph: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -149,7 +147,7 @@ WithBacklink.parameters = {
 export const WithForwardLink = Template.bind({});
 WithForwardLink.parameters = {
   state: {
-    _graphState: {
+    graph: {
       nodes: [
         { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
         { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
@@ -173,13 +171,13 @@ WithForwardLink.parameters = {
 export const MusicSkill = Template.bind({});
 MusicSkill.parameters = {
   state: {
-    _graphState: plotToGraph(musicPlot),
+    graph: plotToGraph(musicPlot),
   } as Partial<State>,
 };
 
 export const StressTest = Template.bind({});
 StressTest.parameters = {
   state: {
-    _graphState: createNodesAndEdges(20, 20),
+    graph: createNodesAndEdges(20, 20),
   } as Partial<State>,
 };
