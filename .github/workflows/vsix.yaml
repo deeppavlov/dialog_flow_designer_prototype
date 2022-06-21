@@ -43,5 +43,5 @@ jobs:
       - name: Upload vsix file
         uses: actions/upload-artifact@v3
         with:
-          name: dist-without-markdown
+          name: extension-vsix
           path: dialog-flow-designer-vscode-*.vsix
