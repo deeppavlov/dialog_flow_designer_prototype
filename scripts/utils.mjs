@@ -85,9 +85,20 @@ Install PNPM: https://pnpm.io
 };
 
 export const checkIfInstalled = () => {
-  return existsSync("node_modules") && existsSync("venv");
+  return existsSync("node_modules"); // && existsSync("venv");
 };
 
 export const ensureInstalled = () => {
   if (!checkIfInstalled()) abort(`You have to install the project first. Run "pnpm i"`);
+};
+
+export const createVenv = async () => {
+  if (!existsSync("venv")) {
+    console.log("Creating venv");
+    try {
+      await exec("python -m venv venv");
+    } catch (e) {
+      abort(`Python venv creating failed. Error:\n${e.stderr}`);
+    }
+  }
 };

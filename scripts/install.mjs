@@ -1,7 +1,7 @@
 import { existsSync } from "fs";
 import { exec as execCb } from "child_process";
 import { promisify } from "util";
-import { ensurePNPM, ensureRoot } from "./utils.mjs";
+import { createVenv, ensurePNPM, ensureRoot } from "./utils.mjs";
 import { abort } from "process";
 const exec = promisify(execCb);
 
@@ -46,13 +46,6 @@ Try installing pyenv (https://github.com/pyenv/pyenv), and run
 await ensurePNPM();
 
 // Setup python venv
-if (!existsSync("venv")) {
-  console.log("Creating venv");
-  try {
-    await exec("python -m venv venv");
-  } catch (e) {
-    abort(`Python venv creating failed. Error:\n${e.stderr}`);
-  }
-}
+await createVenv();
 
 console.log("Environment ok");
