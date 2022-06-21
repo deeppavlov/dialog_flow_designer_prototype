@@ -5,9 +5,11 @@
   "scripts": {
     "preinstall": "node scripts/install.mjs",
     "dev:vsc": "concurrently \"cd packages/editor && npm run dev:vsc\" \"cd packages/extension && npm run dev\" -n editor,extension -c",
-    "storybook": "cd packages/editor && npm -s run storybook"
+    "storybook": "cd packages/editor && npm -s run storybook",
+    "build:vsix": "node scripts/buildExtension.mjs"
   },
   "devDependencies": {
-    "concurrently": "^7.2.1"
+    "concurrently": "^7.2.1",
+    "fs-extra": "^10.1.0"
   }
 }

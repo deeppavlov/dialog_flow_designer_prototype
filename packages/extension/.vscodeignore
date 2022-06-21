@@ -1,0 +1,6 @@
+src
+scripts
+node_modules
+test
+.eslintrc.js
+tsconfig.json

@@ -7,3 +7,4 @@ __pycache__
 .pnpm-debug.log
 storybook-static
 build-storybook.log
+*.vsix

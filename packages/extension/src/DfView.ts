@@ -35,8 +35,8 @@ export default class DfView implements vscode.Disposable {
   public onEditorAction = (cb: ActionSub) => {
     this.actionSubs.add(cb);
     return <vscode.Disposable>{
-      dispose: () => this.actionSubs.delete(cb)
-    }
+      dispose: () => this.actionSubs.delete(cb),
+    };
   };
 
   private handleAction = (action: EditorAction) => {
@@ -59,10 +59,13 @@ export default class DfView implements vscode.Disposable {
     const useDevServer = devServer && process.env.NODE_ENV === "development";
     // TODO: figure out production bundle
     const scriptUri = useDevServer
-      ? ""
+      ? "/src/main.tsx"
       : this.panel.webview.asWebviewUri(
-          vscode.Uri.joinPath(this.context.extensionUri, "webview", "main.js")
+          vscode.Uri.joinPath(this.context.extensionUri, "dist", "editor", "index.js")
         );
+    const cssUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "dist", "editor", "index.css")
+    );
 
     return /* html */ `
     <html lang="en">
@@ -80,7 +83,8 @@ window.$RefreshReg$ = () => {}
 window.$RefreshSig$ = () => (type) => type
 window.__vite_plugin_react_preamble_installed__ = true
         </script>`
-    : ""
+    : // We only need to link our stylesheet in production
+      `<link rel="stylesheet" href="${cssUri}">`
 }
 
       <meta charset="UTF-8" />
@@ -89,7 +93,7 @@ window.__vite_plugin_react_preamble_installed__ = true
     </head>
     <body>
       <div id="root"></div>
-      <script type="module" src="${useDevServer ? "/src/main.tsx" : scriptUri}"></script>
+      <script type="module" src="${scriptUri}"></script>
     </body>
   </html>`;
   };
