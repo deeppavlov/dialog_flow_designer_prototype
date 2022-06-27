@@ -1,0 +1,41 @@
+name: "Nightly VSIX and Storybook builds"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  vsix_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+
+      - name: Build extension VSIX
+        run: npm run build:vsix
+
+      - name: Upload nightly VSIX build
+        uses: actions/upload-artifact@v3
+        with:
+          name: extension-vsix
+          path: dialog-flow-designer-vscode-*.vsix
+
+  # This needs to be set up with a Chromatic project token secret
+  # See: https://www.chromatic.com/docs/github-actions
+  # Need admin acces to the repo for that
+  # chromatic-deployment:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     # Need to fetch the entire history for Chromatic to work properly
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: ./.github/actions/setup
+
+  #     - name: Publish to Chromatic
+  #       uses: chromaui/action@v1
+  #       with:
+  #         workingDir: packages/editor
+  #         projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

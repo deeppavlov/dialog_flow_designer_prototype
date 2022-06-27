@@ -1,0 +1,33 @@
+name: Setup
+description: Install dependencies and setup for further CI steps
+runs:
+  using: "composite"
+  steps:
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2.2.2
+      with:
+        version: 6
+
+    - name: Get pnpm store directory
+      id: pnpm-cache
+      run: |
+        echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install VSIX
+      run: pnpm install --global vsce
+
+    - name: Install dependencies
+      run: pnpm install
