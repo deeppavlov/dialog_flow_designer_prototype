@@ -15,6 +15,7 @@ StarterNode.args = {
     id: "id",
     label: "Start Node",
     turn: Turn.BOT,
+    flow: "flow",
     properties: [],
   },
   starter: true,
@@ -26,6 +27,7 @@ BotNode.args = {
     id: "id",
     label: "Bot Node",
     turn: Turn.BOT,
+    flow: "flow",
     properties: [],
   },
 };
@@ -36,6 +38,7 @@ UserNode.args = {
     id: "id",
     label: "User Node",
     turn: Turn.USER,
+    flow: "flow",
     properties: [],
   },
 };
