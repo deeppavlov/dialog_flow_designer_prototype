@@ -4,10 +4,10 @@ This branch contains the work on the brand-new experimental UI for the extension
 
 ## Nighly builds
 
-You can get a `vsix` build from the latest [commit here](https://nightly.link/deepmipt/dialog_flow_designer/workflows/vsix.yaml/main/extension-vsix.zip).
+You can get a `vsix` build from the latest [commit here](https://nightly.link/deepmipt/dialog_flow_designer/workflows/nightly.yaml/main/vsix-build.zip).
 
 **Usage:**
- 1. [Download](https://nightly.link/deepmipt/dialog_flow_designer/workflows/vsix.yaml/main/extension-vsix.zip) the build.
+ 1. [Download](https://nightly.link/deepmipt/dialog_flow_designer/workflows/nightly.yaml/main/vsix-build.zip) the build.
  2. Unzip the contents. There should be a single file named `dialog-flow-designer-vscode-x.x.x.vsix`.
  3. Open VSCode:
     1. Click the extensions tab on the left.
