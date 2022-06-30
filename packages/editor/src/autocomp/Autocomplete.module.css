@@ -1,7 +1,0 @@
-.autocomp-cont > div:last-child {
-  display: none;
-}
-
-.autocomp-cont:focus-within > div:last-child {
-  display: block;
-}
