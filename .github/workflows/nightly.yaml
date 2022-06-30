@@ -1,4 +1,4 @@
-name: "Nightly VSIX and Storybook builds"
+name: Build VSIX
 
 on:
   push:
@@ -7,35 +7,40 @@ on:
     branches: [main]
 
 jobs:
-  vsix_build:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
 
-      - name: Build extension VSIX
-        run: npm run build:vsix
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
-      - name: Upload nightly VSIX build
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 6
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - run: pnpm install
+
+      - run: npm run build:vsix
+
+      - name: Upload vsix file
         uses: actions/upload-artifact@v3
         with:
-          name: extension-vsix
+          name: dist-without-markdown
           path: dialog-flow-designer-vscode-*.vsix
-
-  # This needs to be set up with a Chromatic project token secret
-  # See: https://www.chromatic.com/docs/github-actions
-  # Need admin acces to the repo for that
-  # chromatic-deployment:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     # Need to fetch the entire history for Chromatic to work properly
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
-  #     - uses: ./.github/actions/setup
-
-  #     - name: Publish to Chromatic
-  #       uses: chromaui/action@v1
-  #       with:
-  #         workingDir: packages/editor
-  #         projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
