@@ -25,6 +25,8 @@ For testing, you can use this [YAML file](https://raw.githubusercontent.com/deep
 
 ## Development
 
+For general information about development, see the [wiki](https://github.com/deepmipt/dialog_flow_designer/wiki).
+
 First, make sure you have the requirements installed:
  - Node v14.8+
  - Python 3.7+
