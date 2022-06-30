@@ -14,11 +14,13 @@ const scrollSpeedModifier = 0.5;
 const maxZoom = 1;
 const minZoom = 0.1;
 
+// This coloring was added last-minute for demo purposes
+// It should be replaced by something more robust
+const colors = ["#e9a7a1", "#ecbaa2", "#edd9a3", "#a2e2b0", "#b1c8ed", "#b3abdf", "#edc2d5"];
 const colorMap = new Map<string, string>();
 const colorFlow = (flowName: string) => {
   if (!colorMap.has(flowName)) {
-    const hue = colorMap.size * (180 * (3 - Math.sqrt(5)));
-    colorMap.set(flowName, `hsl(${hue + 60},100%,75%)`);
+    colorMap.set(flowName, colors[colorMap.size % colors.length]);
   }
   return colorMap.get(flowName);
 };
@@ -138,16 +140,15 @@ const Canvas: FC<{ zoomWithControl?: boolean }> = ({ zoomWithControl = true }) =
       >
         {graph.nodes.map((node) => {
           const pos = nodeLayoutPositions[node.id];
-          const width = nodeWidth + columnGap;
-          const height = nodeHeight + rowGap;
+          const width = nodeWidth + columnGap + 6;
+          const height = nodeHeight + rowGap + 6;
           return (
             <div
               key={"bg" + node.id}
               className="absolute pointer-events-none"
               style={{
-                transform: `translate(${pos.x - columnGap / 2}px, ${pos.y - rowGap / 2}px)`,
+                transform: `translate(${pos.x - columnGap / 2 - 3}px, ${pos.y - rowGap / 2 - 3}px)`,
                 background: `${colorFlow(node.flow)}`,
-                border: `solid 3px ${colorFlow(node.flow)}`,
                 width,
                 height,
                 zIndex: -2,
