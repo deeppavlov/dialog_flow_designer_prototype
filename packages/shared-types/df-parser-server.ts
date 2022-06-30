@@ -77,7 +77,7 @@ export interface Plot {
     [id: string]: {
       object: string;
       parent?: string;
-      args?: string[] | string[][];
+      args?: any;
       kwargs?: Record<string, string | string[]>;
     };
   };

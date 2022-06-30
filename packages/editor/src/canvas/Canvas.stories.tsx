@@ -4,12 +4,13 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import Canvas from "./Canvas";
 import musicPlot from "../__mocks__/mockPlot";
+import bookPlot from "../__mocks__/mockPlotWithFlows";
 import { GEdge, GNode, Graph, Turn } from "../types";
 import { useState } from "react";
 import { plotToGraph } from "../utils/plot";
 import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
 import { resetState, State, useStore } from "../store";
-import { getLayout } from "../utils/layout";
+import { identity, multiply, scale, translate } from "rematrix";
 
 function createNodesAndEdges(xNodes = 10, yNodes = 10): Graph {
   const nodes: GNode[] = [];
@@ -24,6 +25,7 @@ function createNodesAndEdges(xNodes = 10, yNodes = 10): Graph {
         id: `stress-${nodeId.toString()}`,
         label: data.label,
         properties: [],
+        flow: "flow",
         turn: Turn.BOT,
       };
       nodes.push(node);
@@ -73,7 +75,7 @@ export const SingleNode = Template.bind({});
 SingleNode.parameters = {
   state: {
     graph: {
-      nodes: [{ id: "id", label: "Start node", turn: Turn.BOT, properties: [] }],
+      nodes: [{ id: "id", label: "Start node", turn: Turn.BOT, properties: [], flow: "flow" }],
       edges: [],
     },
     selectedNodeId: "id",
@@ -85,9 +87,9 @@ NodeWithTwoChildren.parameters = {
   state: {
     graph: {
       nodes: [
-        { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
-        { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
-        { id: "3", label: "Node 2", turn: Turn.USER, properties: [] },
+        { id: "1", label: "Start node", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "2", label: "Node 1", turn: Turn.USER, properties: [], flow: "flow" },
+        { id: "3", label: "Node 2", turn: Turn.USER, properties: [], flow: "flow" },
       ],
       edges: [
         { fromId: "1", toId: "2" },
@@ -102,12 +104,12 @@ ThreeLevelTree.parameters = {
   state: {
     graph: {
       nodes: [
-        { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
-        { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
-        { id: "3", label: "Node 2", turn: Turn.USER, properties: [] },
-        { id: "4", label: "Node 3", turn: Turn.BOT, properties: [] },
-        { id: "5", label: "Node 4", turn: Turn.BOT, properties: [] },
-        { id: "6", label: "Node 5", turn: Turn.BOT, properties: [] },
+        { id: "1", label: "Start node", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "2", label: "Node 1", turn: Turn.USER, properties: [], flow: "flow" },
+        { id: "3", label: "Node 2", turn: Turn.USER, properties: [], flow: "flow" },
+        { id: "4", label: "Node 3", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "5", label: "Node 4", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "6", label: "Node 5", turn: Turn.BOT, properties: [], flow: "flow" },
       ],
       edges: [
         { fromId: "1", toId: "2" },
@@ -125,12 +127,12 @@ WithBacklink.parameters = {
   state: {
     graph: {
       nodes: [
-        { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
-        { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
-        { id: "3", label: "Node 2", turn: Turn.USER, properties: [] },
-        { id: "4", label: "Node 3", turn: Turn.BOT, properties: [] },
-        { id: "5", label: "Node 4", turn: Turn.BOT, properties: [] },
-        { id: "6", label: "Node 5", turn: Turn.BOT, properties: [] },
+        { id: "1", label: "Start node", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "2", label: "Node 1", turn: Turn.USER, properties: [], flow: "flow" },
+        { id: "3", label: "Node 2", turn: Turn.USER, properties: [], flow: "flow" },
+        { id: "4", label: "Node 3", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "5", label: "Node 4", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "6", label: "Node 5", turn: Turn.BOT, properties: [], flow: "flow" },
       ],
       edges: [
         { fromId: "1", toId: "2" },
@@ -149,12 +151,12 @@ WithForwardLink.parameters = {
   state: {
     graph: {
       nodes: [
-        { id: "1", label: "Start node", turn: Turn.BOT, properties: [] },
-        { id: "2", label: "Node 1", turn: Turn.USER, properties: [] },
-        { id: "3", label: "Node 2", turn: Turn.USER, properties: [] },
-        { id: "4", label: "Node 3", turn: Turn.BOT, properties: [] },
-        { id: "5", label: "Node 4", turn: Turn.BOT, properties: [] },
-        { id: "6", label: "Node 5", turn: Turn.BOT, properties: [] },
+        { id: "1", label: "Start node", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "2", label: "Node 1", turn: Turn.USER, properties: [], flow: "flow" },
+        { id: "3", label: "Node 2", turn: Turn.USER, properties: [], flow: "flow" },
+        { id: "4", label: "Node 3", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "5", label: "Node 4", turn: Turn.BOT, properties: [], flow: "flow" },
+        { id: "6", label: "Node 5", turn: Turn.BOT, properties: [], flow: "flow" },
       ],
       edges: [
         { fromId: "1", toId: "2" },
@@ -172,6 +174,14 @@ export const MusicSkill = Template.bind({});
 MusicSkill.parameters = {
   state: {
     graph: plotToGraph(musicPlot),
+  } as Partial<State>,
+};
+
+export const BookSkill = Template.bind({});
+BookSkill.parameters = {
+  state: {
+    viewTransform: multiply(scale(0.25), translate(300, 50)),
+    graph: plotToGraph(bookPlot),
   } as Partial<State>,
 };
 

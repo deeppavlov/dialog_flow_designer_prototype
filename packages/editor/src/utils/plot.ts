@@ -1,5 +1,5 @@
 import { Graph, GNode, Turn, GEdge } from "../types";
-import { NodeType, Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
+import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
 
 /**
  * Convert a parsed DF plot in the format outputted by the parser to a graph (nodes and edges).
@@ -38,24 +38,33 @@ export const plotToGraph = (plot: Plot): Graph => {
   };
 
   const nodes: GNode[] = [];
+  const nodeIds = new Set<string>(
+    Object.entries(plot.nodes)
+      .filter(([_, node]) => node.type === "regular")
+      .map(([k]) => k)
+  );
   Object.entries(plot.nodes).forEach(([id, node]) => {
-    if (node.type !== "regular" || !node.transitions) return;
+    if (node.type !== "regular") return;
+
+    // 1. Add current response node
+    const flow = Object.values(plot.flows).find((fl) => fl.nodes.includes(id))?.name ?? "noflow";
+    nodes.push({
+      id,
+      label: node.name || "noname",
+      turn: Turn.BOT,
+      flow,
+      properties: [],
+    });
+
+    // 2. Add transitions from the current node
     node.transitions?.forEach((transId) => {
       const trans = plot.transitions[transId];
-      if (!trans.label.startsWith("id#nd")) return;
+      if (!trans.label.startsWith("id#nd") || !nodeIds.has(trans.label)) return;
 
-      // 1. Add current response node
-      nodes.push({
-        id,
-        label: node.name || "noname",
-        turn: Turn.BOT,
-        properties: [],
-      });
-
-      // 2. Add edge from node to condition
+      // 2.1. Add edge from node to condition
       addEdge(id, transId);
 
-      // 3. Find condition name/type
+      // 2.2. Find condition name/type
       let cond = "unknown";
       const condId = trans.condition;
       if (condId.startsWith("id#ln")) {
@@ -67,15 +76,16 @@ export const plotToGraph = (plot: Plot): Graph => {
         }
       }
 
-      // 4. Add condition node
+      // 2.3. Add condition node
       nodes.push({
-        id,
+        id: transId,
         label: cond,
         turn: Turn.USER,
+        flow,
         properties: [],
       });
 
-      // 5. Add edge from condition to target node
+      // 2.4. Add edge from condition to target node
       addEdge(transId, trans.label);
     });
   });

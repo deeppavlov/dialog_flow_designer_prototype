@@ -1,0 +1,143 @@
+flows:
+  id#fl_5bad3214:
+    name: funfact
+    nodes:
+    - id#nd_4d7cb761
+    - id#nd_ffabed64
+    - id#nd_73bb9199
+  id#fl_beaf541b:
+    name: service
+    nodes:
+    - id#nd_36f51cda
+    - id#nd_c2d9612b
+    - id#nd_c956663b
+imports:
+  id#im_0dbef77e:
+    code: from df_engine.core.keywords import RESPONSE
+    name: RESPONSE
+  id#im_3535f41e:
+    code: from df_engine.core.keywords import LOCAL
+    name: LOCAL
+  id#im_3ffb316b:
+    code: import df_engine.conditions as cnd
+    name: cnd
+  id#im_42871b43:
+    code: from df_engine.core.keywords import GLOBAL
+    name: GLOBAL
+  id#im_47abefde:
+    code: import scenario.condition as loc_cnd
+    name: loc_cnd
+  id#im_739a9753:
+    code: from df_engine.core.keywords import PROCESSING
+    name: PROCESSING
+  id#im_91ccffab:
+    code: import logging
+    name: logging
+  id#im_96ff48e8:
+    code: import scenario.response as rsp
+    name: rsp
+  id#im_db57374e:
+    code: from df_engine.core.keywords import TRANSITIONS
+    name: TRANSITIONS
+  id#im_eca4e7df:
+    code: from df_engine.core import Actor
+    name: Actor
+  id#im_ff401b08:
+    code: import common.dff.integration.processing as int_prs
+    name: int_prs
+linking:
+  id#ln_94947997:
+    object: id#df_850098b1
+  id#ln_a427cb44:
+    args:
+    - id#df_0b1db282
+    object: id#df_10ef4853
+  id#ln_a49bcd39:
+    object: id#df_4c1efeaa
+  id#ln_cfe7de66:
+    object: id#df_52ae3328
+  id#ln_dc866f72:
+    args:
+    - - id#df_4c1efeaa
+      - id#df_b20009a6
+    object: id#df_a3e40a0d
+  id#ln_e3edca4d:
+    object: id#df_36724c15
+miscs: {}
+nodes:
+  id#nd_36f51cda:
+    transitions:
+    - id#tr_27105e05
+    type: local
+  id#nd_4d7cb761:
+    transitions:
+    - id#tr_bbe07fc1
+    type: local
+  id#nd_73bb9199:
+    name: thematic
+    response: id#rs_60a5f53a
+    type: regular
+  id#nd_7bdd4b51:
+    transitions:
+    - id#tr_c6e56814
+    type: global
+  id#nd_c2d9612b:
+    name: start
+    response: id#rs_b0e41588
+    type: regular
+  id#nd_c956663b:
+    name: fallback
+    processing: id#pr_e6906ea2
+    response: id#rs_1dc5fc52
+    type: regular
+  id#nd_ffabed64:
+    name: random
+    response: id#rs_e71ec323
+    type: regular
+plots:
+  id#pl_423dd107:
+    flows:
+    - id#fl_beaf541b
+    - id#fl_5bad3214
+    name: flows
+processings:
+  id#pr_e6906ea2:
+    items:
+    - set_confidence: id#ln_a427cb44
+py_defs:
+  id#df_0b1db282:
+    name: ZERO_CONFIDENCE
+  id#df_10ef4853:
+    name: int_prs.set_confidence
+  id#df_36724c15:
+    name: rsp.thematic_funfact_response
+  id#df_4c1efeaa:
+    name: loc_cnd.random_funfact_condition
+  id#df_52ae3328:
+    name: loc_cnd.thematic_funfact_condition
+  id#df_850098b1:
+    name: rsp.random_funfact_response
+  id#df_a3e40a0d:
+    name: cnd.any
+  id#df_b20009a6:
+    name: loc_cnd.another_funfact_condition
+responses:
+  id#rs_1dc5fc52:
+    response_object: '""'
+  id#rs_60a5f53a:
+    response_object: id#ln_e3edca4d
+  id#rs_b0e41588:
+    response_object: '""'
+  id#rs_e71ec323:
+    response_object: id#ln_94947997
+transitions:
+  id#tr_27105e05:
+    condition: id#ln_a49bcd39
+    label: id#nd_ffabed64
+  id#tr_bbe07fc1:
+    condition: id#ln_dc866f72
+    label: id#nd_ffabed64
+  id#tr_c6e56814:
+    condition: id#ln_cfe7de66
+    label: id#nd_73bb9199
+    priority: 1.1

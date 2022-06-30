@@ -1,0 +1,874 @@
+flows:
+  id#fl_0b75b4b4:
+    name: subject_detected
+    nodes:
+    - id#nd_0912c269
+    - id#nd_b6a3ad7e
+  id#fl_50fc6822:
+    name: service
+    nodes:
+    - id#nd_2d9de9af
+    - id#nd_76f0041f
+  id#fl_786fd0e2:
+    name: subject_undetected
+    nodes:
+    - id#nd_ed4c3ecc
+  id#fl_b9bcb2e4:
+    name: covid_fact
+    nodes:
+    - id#nd_bf771647
+    - id#nd_f6d43eb7
+    - id#nd_899ae0e1
+    - id#nd_2f76edfc
+    - id#nd_c637d4f7
+  id#fl_fc15a9e9:
+    name: simple
+    nodes:
+    - id#nd_16e07d6b
+    - id#nd_b5e78644
+    - id#nd_02f3deb2
+    - id#nd_f276c9dd
+    - id#nd_4d785ad9
+    - id#nd_2f89f224
+    - id#nd_a2220149
+    - id#nd_03328d26
+    - id#nd_ecfce46d
+    - id#nd_a207017d
+    - id#nd_e5a41d32
+    - id#nd_f811c8de
+    - id#nd_2610dc98
+imports:
+  id#im_0e44ae1f:
+    code: import common.dff.integration.processing as int_prs
+    name: int_prs
+  id#im_15e8e39d:
+    code: import scenario.condition as loc_cnd
+    name: loc_cnd
+  id#im_25d3d6e3:
+    code: from df_engine.core.keywords import GLOBAL
+    name: GLOBAL
+  id#im_30a2c192:
+    code: import scenario.response as loc_rsp
+    name: loc_rsp
+  id#im_34bad1ee:
+    code: from df_engine.core.keywords import RESPONSE
+    name: RESPONSE
+  id#im_35121722:
+    code: import common.movies as common_movies
+    name: common_movies
+  id#im_36ac67fa:
+    code: from df_engine.core.keywords import TRANSITIONS
+    name: TRANSITIONS
+  id#im_42edf970:
+    code: import scenario.processing as loc_prs
+    name: loc_prs
+  id#im_45d2bf6b:
+    code: from df_engine.core import Actor
+    name: Actor
+  id#im_5269b8bd:
+    code: import logging
+    name: logging
+  id#im_5847dce2:
+    code: import common.books as common_books
+    name: common_books
+  id#im_5ddb91dd:
+    code: import df_engine.responses as rsp
+    name: rsp
+  id#im_6d231493:
+    code: import df_engine.conditions as cnd
+    name: cnd
+  id#im_9541738b:
+    code: from df_engine.core.keywords import PROCESSING
+    name: PROCESSING
+  id#im_bbb14216:
+    code: import common.dff.integration.condition as int_cnd
+    name: int_cnd
+  id#im_ecf38d86:
+    code: import re
+    name: re
+linking:
+  id#ln_020d36e3:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_04529bf0:
+    args:
+    - - id#ln_d3fb8c0c
+      - id#df_287b475d
+    object: id#df_5add45b3
+  id#ln_0637536d:
+    object: id#df_0ef9f097
+  id#ln_0a41d537:
+    args:
+    - - id#ln_3a419daa
+      - id#ln_9f13d854
+    object: id#df_5add45b3
+  id#ln_0be240ad:
+    object: id#df_1b46cd14
+  id#ln_1383bc1d:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_1aa9b484:
+    object: id#df_59c6af54
+  id#ln_1bc367d9:
+    object: id#df_b07480e8
+  id#ln_1f98dc0b:
+    object: id#df_b07480e8
+  id#ln_1ff66d3b:
+    object: id#df_b07480e8
+  id#ln_2982b20d:
+    object: id#df_402f9bb4
+  id#ln_29963fa8:
+    args:
+    - (what are my chances|will i die)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+  id#ln_2f9e0b65:
+    args:
+    - id#df_d5d53fd7
+    object: id#df_1f3b3863
+    parent: id#ln_c3959f33
+  id#ln_30fbe152:
+    object: id#df_b07480e8
+  id#ln_31ebede9:
+    args:
+    - core_fact_1
+    - id#df_dbf8fe2e
+    object: id#df_f32cc2a9
+  id#ln_359d9867:
+    args:
+    - - id#ln_4814af86
+      - id#df_287b475d
+    object: id#df_5add45b3
+  id#ln_35ccd975:
+    args:
+    - id#df_6a0a8827
+    object: id#df_1770a7d8
+  id#ln_37b11575:
+    args:
+    - id#df_db439f87
+    object: id#df_1770a7d8
+  id#ln_3a419daa:
+    args:
+    - id#ln_90b93eed
+    object: id#df_1f3b3863
+    parent: id#ln_0a41d537
+  id#ln_3d551005:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_40637cb4:
+    object: id#df_06da9531
+  id#ln_4336e14f:
+    args:
+    - - id#df_6952280c
+      - id#ln_6f035235
+    object: id#df_5add45b3
+    parent: id#ln_c3959f33
+  id#ln_46f43731:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_4814af86:
+    args:
+    - (origin|come from|where did it start)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_359d9867
+  id#ln_4d37e0cc:
+    object: id#df_1b46cd14
+  id#ln_5100532f:
+    object: id#df_94dd44f3
+  id#ln_55be8f73:
+    args:
+    - - id#ln_ce56818a
+      - id#df_287b475d
+    object: id#df_5add45b3
+  id#ln_55cec3ea:
+    args:
+    - anger
+    object: id#df_81cb6966
+    parent: id#ln_b5a0f6ed
+  id#ln_58e5a075:
+    object: id#df_6caf4d7c
+  id#ln_5afdcab9:
+    args:
+    - (asthma)
+    object: id#df_c9902135
+  id#ln_62a597e0:
+    args:
+    - - id#ln_fbbf19eb
+      - id#ln_e8ed3505
+    object: id#df_5add45b3
+  id#ln_641801b2:
+    object: id#df_b07480e8
+  id#ln_67fc2b67:
+    args:
+    - fear
+    object: id#df_81cb6966
+    parent: id#ln_b5a0f6ed
+  id#ln_6f035235:
+    args:
+    - id#df_287b475d
+    object: id#df_1f3b3863
+    parent: id#ln_4336e14f
+  id#ln_7028d831:
+    args:
+    - id#df_287b475d
+    object: id#df_1f3b3863
+    parent: id#ln_a7d67f99
+  id#ln_7ed74ea4:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_88737fd2:
+    args:
+    - id#df_c3697b8f
+    object: id#df_1770a7d8
+  id#ln_8905c30b:
+    args:
+    - id#df_1da28c21
+    object: id#df_1770a7d8
+  id#ln_897c8242:
+    object: id#df_5cc8065e
+  id#ln_89ab84ba:
+    args:
+    - (\bend\b|\bover\b)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_e0353238
+  id#ln_89ea60ef:
+    args:
+    - - Please, calm down. We are a strong nation, we are vaccinating people and we
+        will overcome this disease one day.
+      - Please, chin up. We have already defeated a hell lot of diseases, and I am
+        sure that coronavirus will be the next one.
+    object: id#df_5f753721
+  id#ln_8ed5bbc0:
+    object: id#df_72f441d4
+  id#ln_9005c932:
+    object: id#df_6caf4d7c
+  id#ln_90b93eed:
+    args:
+    - core_fact_1
+    object: id#df_08fe3e44
+    parent: id#ln_3a419daa
+  id#ln_9101d74c:
+    args:
+    - (death|\bdie\b|\bdied\b|\bdying\b|mortality|how many desk)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+  id#ln_932d51bc:
+    args:
+    - quarantine
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_e0353238
+  id#ln_946a7b42:
+    args:
+    - id#df_25202742
+    object: id#df_1770a7d8
+  id#ln_952aecba:
+    object: id#df_b07480e8
+  id#ln_9c0419fe:
+    args:
+    - (cure|treatment|vaccine)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+  id#ln_9f13d854:
+    args:
+    - - id#df_6caf4d7c
+      - id#df_287b475d
+    object: id#df_0ea457ed
+    parent: id#ln_0a41d537
+  id#ln_9fc0cfd7:
+    args:
+    - asked_about_age
+    - id#df_dbf8fe2e
+    object: id#df_f32cc2a9
+  id#ln_a1e68f53:
+    args:
+    - core_fact_2
+    - id#df_dbf8fe2e
+    object: id#df_f32cc2a9
+  id#ln_a40d8ca2:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_a7d67f99:
+    args:
+    - - id#df_6952280c
+      - id#ln_7028d831
+    object: id#df_5add45b3
+    parent: id#ln_ff28aa9b
+  id#ln_aba40f65:
+    args:
+    - id#df_c3697b8f
+    object: id#df_1770a7d8
+  id#ln_afff6859:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_b10d0ead:
+    object: id#df_bfc1f8b4
+  id#ln_b5a0f6ed:
+    args:
+    - - id#ln_67fc2b67
+      - id#ln_55cec3ea
+    object: id#df_0ea457ed
+  id#ln_b5a2ee25:
+    args:
+    - (do you have|have you got|are you getting|have you ever got|are you sick with|have
+      you come down with)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_e3d0e271
+  id#ln_bc3a2d8c:
+    args:
+    - - id#df_d5d53fd7
+      - id#df_287b475d
+    object: id#df_5add45b3
+  id#ln_c0c51bb2:
+    object: id#df_6f2e1101
+  id#ln_c2d6f8d6:
+    args:
+    - - id#df_0242c71b
+      - id#df_bcacc860
+    object: id#df_c53e7451
+  id#ln_c3959f33:
+    args:
+    - - id#ln_2f9e0b65
+      - id#ln_4336e14f
+    object: id#df_5add45b3
+  id#ln_ce56818a:
+    args:
+    - (what if|to do| should i do)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_55be8f73
+  id#ln_d1967e82:
+    object: id#df_61d1e84b
+  id#ln_d3fb8c0c:
+    args:
+    - (symptoms|do i have|tell from|if i get)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_04529bf0
+  id#ln_deabe3ac:
+    object: id#df_1b46cd14
+  id#ln_e0353238:
+    args:
+    - - id#ln_932d51bc
+      - id#ln_89ab84ba
+    object: id#df_5add45b3
+  id#ln_e2cc55d5:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_e3d0e271:
+    args:
+    - - id#ln_b5a2ee25
+      - id#df_6952280c
+    object: id#df_5add45b3
+  id#ln_e5c82a5e:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_e88d62e3:
+    args:
+    - id#df_b790c9c5
+    object: id#df_1770a7d8
+  id#ln_e8dd9801:
+    args:
+    - fear
+    - '0.9'
+    object: id#df_81cb6966
+  id#ln_e8ed3505:
+    args:
+    - (should i|safe)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_62a597e0
+  id#ln_eba322af:
+    object: id#df_b07480e8
+  id#ln_efbd75cd:
+    args:
+    - (what is corona|what's corona|what is the pandemic)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+  id#ln_f27ab549:
+    args:
+    - id#df_352caeae
+    object: id#df_1770a7d8
+  id#ln_f4944302:
+    args:
+    - id#df_70b3306e
+    object: id#df_1770a7d8
+  id#ln_f4aa8141:
+    object: id#df_61d1e84b
+  id#ln_f57f6f39:
+    object: id#df_b07480e8
+  id#ln_f8095e24:
+    args:
+    - (don't like|don't want to talk|don't want to hear|not concerned about|over the
+      coronavirus|no coronavirus|stop talking about|no more coronavirus|don't want
+      to listen)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+  id#ln_fbbf19eb:
+    args:
+    - (vaccine|vaccination)
+    - id#df_db9c0bf9
+    object: id#df_c9902135
+    parent: id#ln_62a597e0
+  id#ln_ff28aa9b:
+    args:
+    - - id#df_d5d53fd7
+      - id#ln_a7d67f99
+    object: id#df_5add45b3
+miscs: {}
+nodes:
+  id#nd_02f3deb2:
+    name: bot_has_covid
+    response: id#rs_8c34bfcf
+    type: regular
+  id#nd_03328d26:
+    name: covid_treatment
+    processing: id#pr_9ad2d2ee
+    response: id#rs_078f919f
+    type: regular
+  id#nd_0912c269:
+    name: clarify_intention
+    processing: id#pr_2a872d73
+    response: id#rs_615174ae
+    transitions:
+    - id#tr_daa6a6f4
+    type: regular
+  id#nd_16e07d6b:
+    name: quarantine_end
+    response: id#rs_2eff2663
+    type: regular
+  id#nd_2610dc98:
+    name: age_covid_risks
+    processing: id#pr_f0314cdd
+    response: id#rs_d9a51675
+    type: regular
+  id#nd_2d9de9af:
+    name: start
+    response: id#rs_a9aafcd1
+    type: regular
+  id#nd_2f76edfc:
+    name: core_fact_1
+    processing: id#pr_6f8bab84
+    response: id#rs_82db55cc
+    transitions:
+    - id#tr_3770752b
+    - id#tr_06fbabe5
+    - id#tr_d8fe8fa0
+    type: regular
+  id#nd_2f89f224:
+    name: user_resilience_to_covid
+    response: id#rs_07e89d94
+    type: regular
+  id#nd_4d785ad9:
+    name: user_feel_emotion
+    processing: id#pr_3fb166c1
+    response: id#rs_994f3736
+    type: regular
+  id#nd_76f0041f:
+    name: fallback
+    processing: id#pr_fa710c30
+    response: id#rs_6ed2a0b7
+    type: regular
+  id#nd_899ae0e1:
+    name: replied_yes
+    processing: id#pr_19d69c6b
+    response: id#rs_b5e565b0
+    type: regular
+  id#nd_a207017d:
+    name: covid_advice
+    processing: id#pr_048d8764
+    response: id#rs_fabd9b76
+    type: regular
+  id#nd_a2220149:
+    name: covid_symptoms
+    processing: id#pr_f472eeca
+    response: id#rs_fceb0ed5
+    type: regular
+  id#nd_b5e78644:
+    name: uninteresting_topic
+    processing: id#pr_f58341cd
+    response: id#rs_f38962a7
+    type: regular
+  id#nd_b6a3ad7e:
+    name: subject_stats
+    processing: id#pr_223fd2bf
+    response: id#rs_2f318edf
+    type: regular
+  id#nd_bf771647:
+    name: replied_no
+    processing: id#pr_6a3a99e1
+    response: id#rs_161bf3d7
+    type: regular
+  id#nd_c637d4f7:
+    name: core_fact_2
+    processing: id#pr_98322f47
+    response: id#rs_9475c275
+    type: regular
+  id#nd_e5a41d32:
+    name: covid_origin
+    processing: id#pr_dbe8330c
+    response: id#rs_ab68bf5f
+    type: regular
+  id#nd_ecfce46d:
+    name: asthma_mentioned
+    processing: id#pr_7cd6e5dd
+    response: id#rs_7141ca26
+    type: regular
+  id#nd_ed4c3ecc:
+    name: clarify_intention
+    processing: id#pr_11a8e4cc
+    response: id#rs_d94a0523
+    transitions:
+    - id#tr_e1db2bd4
+    type: regular
+  id#nd_f276c9dd:
+    name: vaccine_safety
+    response: id#rs_2c3a2bef
+    type: regular
+  id#nd_f36dc9ed:
+    processing: id#pr_b16485a3
+    transitions:
+    - id#tr_640cb7dc
+    - id#tr_dcdf69db
+    - id#tr_4f15c77b
+    - id#tr_dd4cec0e
+    - id#tr_73723ab3
+    - id#tr_e5a5b4be
+    - id#tr_e525e053
+    - id#tr_118a00be
+    - id#tr_8c376bce
+    - id#tr_3799b250
+    - id#tr_6a2a5631
+    - id#tr_8bd9b744
+    - id#tr_733358c8
+    - id#tr_30117412
+    - id#tr_0da8b61d
+    - id#tr_374224a9
+    - id#tr_22ea526e
+    type: global
+  id#nd_f6d43eb7:
+    name: feel_fear
+    processing: id#pr_c31944d3
+    response: id#rs_bf1abd96
+    type: regular
+  id#nd_f811c8de:
+    name: what_is_covid
+    processing: id#pr_599a0e0f
+    response: id#rs_66c172c8
+    type: regular
+plots:
+  id#pl_631e9b3e:
+    flows:
+    - id#fl_50fc6822
+    - id#fl_fc15a9e9
+    - id#fl_b9bcb2e4
+    - id#fl_0b75b4b4
+    - id#fl_786fd0e2
+    name: flows
+processings:
+  id#pr_048d8764:
+    items:
+    - '"set_confidence"': id#ln_a40d8ca2
+    - '"offer_more"': id#ln_1bc367d9
+  id#pr_11a8e4cc:
+    items:
+    - '"set_confidence"': id#ln_46f43731
+  id#pr_19d69c6b:
+    items:
+    - '"set_confidence"': id#ln_37b11575
+    - '"execute_response"': id#ln_deabe3ac
+    - '"offer_more"': id#ln_f57f6f39
+  id#pr_223fd2bf:
+    items:
+    - '"detect_subject"': id#ln_d1967e82
+    - '"execute_response"': id#ln_4d37e0cc
+    - '"offer_more"': id#ln_1f98dc0b
+  id#pr_2a872d73:
+    items:
+    - '"set_confidence"': id#ln_946a7b42
+    - '"detect_subject"': id#ln_f4aa8141
+    - '"insert_subject"': id#ln_40637cb4
+  id#pr_3fb166c1:
+    items:
+    - '"set_confidence"': id#ln_8905c30b
+  id#pr_599a0e0f:
+    items:
+    - '"set_confidence"': id#ln_1383bc1d
+    - '"offer_more"': id#ln_30fbe152
+  id#pr_6a3a99e1:
+    items:
+    - '"set_confidence"': id#ln_afff6859
+    - '"add_from_options"': id#ln_c2d6f8d6
+  id#pr_6f8bab84:
+    items:
+    - '"set_confidence"': id#ln_e2cc55d5
+    - '"insert_global_confirmed"': id#ln_2982b20d
+    - '"set_flag"': id#ln_31ebede9
+  id#pr_7cd6e5dd:
+    items:
+    - '"set_confidence"': id#ln_020d36e3
+    - '"offer_more"': id#ln_1ff66d3b
+  id#pr_98322f47:
+    items:
+    - '"set_confidence"': id#ln_f27ab549
+    - '"insert_global_deaths"': id#ln_897c8242
+    - '"offer_more"': id#ln_eba322af
+    - '"set_flag"': id#ln_a1e68f53
+  id#pr_9ad2d2ee:
+    items:
+    - '"set_confidence"': id#ln_f4944302
+    - '"offer_more"': id#ln_952aecba
+  id#pr_b16485a3:
+    items:
+    - '"set_confidence"': id#ln_e88d62e3
+  id#pr_c31944d3:
+    items:
+    - '"set_confidence"': id#ln_35ccd975
+  id#pr_dbe8330c:
+    items:
+    - '"set_confidence"': id#ln_7ed74ea4
+  id#pr_f0314cdd:
+    items:
+    - '"set_confidence"': id#ln_3d551005
+    - '"detect_age"': id#ln_c0c51bb2
+    - '"execute_response"': id#ln_0be240ad
+    - '"set_flag"': id#ln_9fc0cfd7
+  id#pr_f472eeca:
+    items:
+    - '"set_confidence"': id#ln_e5c82a5e
+    - '"offer_more"': id#ln_641801b2
+  id#pr_f58341cd:
+    items:
+    - '"set_confidence"': id#ln_aba40f65
+  id#pr_fa710c30:
+    items:
+    - '"set_confidence"': id#ln_88737fd2
+py_defs:
+  id#df_0242c71b:
+    name: common_books.SWITCH_BOOK_SKILL_PHRASE
+  id#df_06da9531:
+    name: loc_prs.insert_subject
+  id#df_08fe3e44:
+    name: loc_cnd.check_flag
+  id#df_0ea457ed:
+    name: cnd.any
+  id#df_0ef9f097:
+    name: loc_rsp.get_covid_fact
+  id#df_1770a7d8:
+    name: int_prs.set_confidence
+  id#df_1b46cd14:
+    name: loc_prs.execute_response
+  id#df_1da28c21:
+    name: USER_FEEL_EMOTION_CONFIDENCE
+  id#df_1f3b3863:
+    name: cnd.negation
+  id#df_25202742:
+    name: CLARIFY_INTENTION_ABOUT_SUBJECT_CONFIDENCE
+  id#df_287b475d:
+    name: loc_cnd.about_coronavirus
+  id#df_352caeae:
+    name: HIGH_CONFIDENCE
+  id#df_402f9bb4:
+    name: loc_prs.insert_global_confirmed
+  id#df_59c6af54:
+    name: cnd.true
+  id#df_5add45b3:
+    name: cnd.all
+  id#df_5cc8065e:
+    name: loc_prs.insert_global_deaths
+  id#df_5f753721:
+    name: rsp.choice
+  id#df_61d1e84b:
+    name: loc_prs.detect_subject
+  id#df_6952280c:
+    name: loc_cnd.about_virus
+  id#df_6a0a8827:
+    name: USER_FEEL_FEAR_CONFIDENCE
+  id#df_6caf4d7c:
+    name: int_cnd.is_yes_vars
+  id#df_6f2e1101:
+    name: loc_prs.detect_age
+  id#df_70b3306e:
+    name: BIT_LOWER_CONFIDENCE
+  id#df_72f441d4:
+    name: int_cnd.is_no_vars
+  id#df_81cb6966:
+    name: loc_cnd.emotion_detected
+  id#df_94dd44f3:
+    name: loc_rsp.tell_age_risks
+  id#df_b07480e8:
+    name: loc_prs.offer_more
+  id#df_b790c9c5:
+    name: DEFAULT_CONFIDENCE
+  id#df_bcacc860:
+    name: common_movies.SWITCH_MOVIE_SKILL_PHRASE
+  id#df_bfc1f8b4:
+    name: loc_rsp.tell_subject_stats
+  id#df_c3697b8f:
+    name: ZERO_CONFIDENCE
+  id#df_c53e7451:
+    name: loc_prs.add_from_options
+  id#df_c9902135:
+    name: cnd.regexp
+  id#df_d5d53fd7:
+    name: loc_cnd.subject_detected
+  id#df_db439f87:
+    name: SUPER_CONFIDENCE
+  id#df_db9c0bf9:
+    name: re.IGNORECASE
+  id#df_dbf8fe2e:
+    name: 'True'
+  id#df_f32cc2a9:
+    name: loc_prs.set_flag
+responses:
+  id#rs_078f919f:
+    response_object: There is no cure designed for COVID-19 yet. You can consult with
+      CDC.gov website for detailed information about the ongoing work on the cure.
+  id#rs_07e89d94:
+    response_object: As I am not your family doctor, my knowledge about your resilience
+      to coronavirus is limited. Please, check the CDC website for more information.
+  id#rs_161bf3d7:
+    response_object: Okay! I hope that this coronavirus will disappear! Now it is
+      better to stay home.
+  id#rs_2c3a2bef:
+    response_object: All CDC-approved vaccines are safe enough for you - of course,
+      if your doctor does not mind against using them. I can't say the same about
+      getting infected, however, so vaccines are necessary to prevent people from
+      that..
+  id#rs_2eff2663:
+    response_object: Although most American states are easing the restrictions, the
+      Coronavirus pandemics in the majority of the states hasn't been reached yet.
+      If you want to help ending it faster, please continue social distancing as much
+      as you can.
+  id#rs_2f318edf:
+    response_object: id#ln_b10d0ead
+  id#rs_615174ae:
+    response_object: I suppose you are asking about coronavirus in {0}. Is it right?
+  id#rs_66c172c8:
+    response_object: Coronavirus COVID 19 is an infectious disease. Its common symptoms
+      include fever, cough, shortness of breath, and many others.Anyone can have mild
+      to severe symptoms. While the majority of cases result in mild symptoms, some
+      cases can be lethal. Older adults and people who have severe underlying medical
+      conditions like heart or lung disease or diabetes seem to be at higher risk
+      for developing more serious complications from COVID-19 illness.
+  id#rs_6ed2a0b7:
+    response_object: ''
+  id#rs_7141ca26:
+    response_object: As you have asthma, I know that you should be especially cautious
+      about coronavirus. Unfortunately, I am not allowed to give any recommendations
+      about coronavirus. You can check the CDC website for more info.
+  id#rs_82db55cc:
+    response_object: According to the recent data, there are {0} confirmed cases of
+      coronavirus. Shall I tell you more?
+  id#rs_8c34bfcf:
+    response_object: As a socialbot, I don't have coronavirus. I hope you won't have
+      it either.
+  id#rs_9475c275:
+    response_object: According to the recent data, there are {0} confirmed deaths
+      from coronavirus.
+  id#rs_994f3736:
+    response_object: id#ln_89ea60ef
+  id#rs_a9aafcd1:
+    response_object: ''
+  id#rs_ab68bf5f:
+    response_object: According to the scientific data, coronavirus COVID 19 is a product
+      of natural evolution. The first place where it caused an outbreak is the city
+      of Wuhan, China.
+  id#rs_b5e565b0:
+    response_object: id#ln_0637536d
+  id#rs_bf1abd96:
+    response_object: Just stay home, wash your hands and you will be fine. We will
+      get over it.
+  id#rs_d94a0523:
+    response_object: I suppose you are asking about coronavirus. Is it right?
+  id#rs_d9a51675:
+    response_object: id#ln_5100532f
+  id#rs_f38962a7:
+    response_object: ''
+  id#rs_fabd9b76:
+    response_object: Unfortunately, I am not allowed to give any recommendations about
+      coronavirus. You can check the CDC website for more info.
+  id#rs_fceb0ed5:
+    response_object: 'According to the CDC website, The main warning signs of coronavirus
+      are: difficulty breathing or shortness of breath, persistent pain or pressure
+      in the chest, new confusion or inability to arouse, bluish lips or face. If
+      you develop any of these signs, get a medical attention.'
+transitions:
+  id#tr_06fbabe5:
+    condition: id#ln_e8dd9801
+    label: id#nd_f6d43eb7
+  id#tr_0da8b61d:
+    condition: id#ln_c3959f33
+    label: id#nd_ed4c3ecc
+  id#tr_118a00be:
+    condition: id#ln_9c0419fe
+    label: id#nd_03328d26
+  id#tr_22ea526e:
+    condition: id#ln_1aa9b484
+    label: id#nd_899ae0e1
+  id#tr_30117412:
+    condition: id#ln_bc3a2d8c
+    label: id#nd_b6a3ad7e
+  id#tr_374224a9:
+    condition: id#ln_9101d74c
+    label: id#nd_c637d4f7
+  id#tr_3770752b:
+    condition: id#ln_8ed5bbc0
+    label: id#nd_bf771647
+  id#tr_3799b250:
+    condition: id#ln_55be8f73
+    label: id#nd_a207017d
+  id#tr_4f15c77b:
+    condition: id#ln_e3d0e271
+    label: id#nd_02f3deb2
+  id#tr_640cb7dc:
+    condition: id#ln_e0353238
+    label: id#nd_16e07d6b
+  id#tr_6a2a5631:
+    condition: id#ln_359d9867
+    label: id#nd_e5a41d32
+  id#tr_733358c8:
+    condition: id#ln_ff28aa9b
+    label: id#nd_0912c269
+  id#tr_73723ab3:
+    condition: id#ln_b5a0f6ed
+    label: id#nd_4d785ad9
+  id#tr_8bd9b744:
+    condition: id#ln_efbd75cd
+    label: id#nd_f811c8de
+  id#tr_8c376bce:
+    condition: id#ln_5afdcab9
+    label: id#nd_ecfce46d
+  id#tr_d8fe8fa0:
+    condition: id#ln_58e5a075
+    label: id#nd_899ae0e1
+  id#tr_daa6a6f4:
+    condition: id#ln_9005c932
+    label: id#nd_b6a3ad7e
+  id#tr_dcdf69db:
+    condition: id#ln_f8095e24
+    label: id#nd_b5e78644
+  id#tr_dd4cec0e:
+    condition: id#ln_62a597e0
+    label: id#nd_f276c9dd
+  id#tr_e1db2bd4:
+    condition: id#ln_0a41d537
+    label: id#nd_2f76edfc
+  id#tr_e525e053:
+    condition: id#ln_04529bf0
+    label: id#nd_a2220149
+  id#tr_e5a5b4be:
+    condition: id#ln_29963fa8
+    label: id#nd_2f89f224

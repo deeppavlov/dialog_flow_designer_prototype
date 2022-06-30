@@ -2,7 +2,6 @@ import produce from "immer";
 import create from "zustand";
 import { Plot } from "@dialog-flow-designer/shared-types/df-parser-server";
 import { GEdge, GNode, Graph, Mode, Size, Turn, XY } from "./types";
-import { getLayout } from "./utils/layout";
 import { plotToGraph } from "./utils/plot";
 import { MsgSub, sendMessage, useMessages } from "./messaging";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
@@ -130,6 +129,8 @@ export const addTransToStaging = () => {
         id: newId,
         label: "New Transition",
         properties: [],
+        // TODO: fix
+        flow: "noflow",
         turn: Turn.USER,
       });
       draft.virtualGraph.edges.push({
@@ -165,6 +166,8 @@ export const addNewNode = (stagingTransId: string) => {
     id: newNodeId,
     label: "New Node",
     properties: [],
+    // TODO: fix
+    flow: "noflow",
     turn: Turn.BOT,
   };
   set((s) => ({

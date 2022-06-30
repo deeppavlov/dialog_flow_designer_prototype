@@ -6,12 +6,22 @@ import cn from "classnames";
 import useStore, { applyViewTransforms, endJump, useGraph } from "../store";
 import shallow from "zustand/shallow";
 import pick from "../utils/pick";
-import { useLayout } from "../utils/layout";
+import { columnGap, rowGap, useLayout } from "../utils/layout";
 import useResizeObserver from "use-resize-observer";
+import { nodeHeight, nodeWidth } from "./Node";
 
 const scrollSpeedModifier = 0.5;
 const maxZoom = 1;
 const minZoom = 0.1;
+
+const colorMap = new Map<string, string>();
+const colorFlow = (flowName: string) => {
+  if (!colorMap.has(flowName)) {
+    const hue = colorMap.size * (180 * (3 - Math.sqrt(5)));
+    colorMap.set(flowName, `hsl(${hue + 60},100%,75%)`);
+  }
+  return colorMap.get(flowName);
+};
 
 const Canvas: FC<{ zoomWithControl?: boolean }> = ({ zoomWithControl = true }) => {
   const { viewTransform, viewportJumping } = useStore(
@@ -126,6 +136,26 @@ const Canvas: FC<{ zoomWithControl?: boolean }> = ({ zoomWithControl = true }) =
           transform: Rematrix.toString(viewTransform),
         }}
       >
+        {graph.nodes.map((node) => {
+          const pos = nodeLayoutPositions[node.id];
+          const width = nodeWidth + columnGap;
+          const height = nodeHeight + rowGap;
+          return (
+            <div
+              key={"bg" + node.id}
+              className="absolute pointer-events-none"
+              style={{
+                transform: `translate(${pos.x - columnGap / 2}px, ${pos.y - rowGap / 2}px)`,
+                background: `${colorFlow(node.flow)}`,
+                border: `solid 3px ${colorFlow(node.flow)}`,
+                width,
+                height,
+                zIndex: -2,
+              }}
+            ></div>
+          );
+        })}
+
         <svg
           version="1.1"
           baseProfile="full"

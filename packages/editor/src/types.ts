@@ -24,6 +24,7 @@ export interface GNode {
   id: string;
   label: string;
   turn: Turn;
+  flow: string;
   properties: Property[];
 }
 

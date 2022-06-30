@@ -14,7 +14,7 @@ const Node: FC<{
   starter?: boolean;
   selected: boolean;
   onClickAdd: () => void;
-}> = ({ node: { label, properties, turn }, starter = false, selected, onClickAdd }) => (
+}> = ({ node: { label, flow, turn }, starter = false, selected, onClickAdd }) => (
   <div
     className={cn(
       "group relative p-5 w-40",
@@ -26,6 +26,7 @@ const Node: FC<{
     )}
   >
     {label}
+
     <div className="h-full left-full top-0 w-10 hidden absolute items-center justify-center display-none hover:flex group-hover:flex">
       <div
         className="bg-white cursor-pointer rounded-1 h-[18px] w-[18px] relative"
