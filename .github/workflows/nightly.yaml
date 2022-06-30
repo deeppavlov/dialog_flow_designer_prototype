@@ -35,6 +35,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - run: pnpm install -g vsce
       - run: pnpm install
 
       - run: npm run build:vsix
